@@ -940,9 +940,10 @@ function secView(){
   const filt=view.filter||'all';
   const filterBar=n>10?`<div class="rp wf"><button class="pill${filt==='all'?' on':''}" data-act="wfilter" data-f="all">전체 ${n}</button><button class="pill${filt==='un'?' on':''}" data-act="wfilter" data-f="un">안 외움 ${allUn.length}</button><button class="pill${filt==='kn'?' on':''}" data-act="wfilter" data-f="kn">완료 ${allKn.length}</button></div>`:'';
   const search=n>20?`<input id="wsearch" class="wsearch" type="search" placeholder="단어·뜻 검색" value="${esc(view.q||'')}" aria-label="단어 검색">`:'';
+  const tint=(s.color&&!isDarkNow())?` style="background:${s.color};color:#1f2a37;--sub:#667085;padding:14px 16px;border-radius:16px;margin:0 0 10px"`:'';
   const head=view.renaming
     ?`<form class="row" data-form="rename"><input name="n" value="${esc(s.name)}" required><button class="btn">저장</button></form>`
-    :`<div class="sh"><h1>${esc(s.name)}</h1>${mv?`<span class="sub">단어 선택 중</span>`:`<button class="btn ghost sm" data-act="more">설정</button>`}</div>`;
+    :`<div class="sh"${tint}><h1>${esc(s.name)}</h1>${mv?`<span class="sub">단어 선택 중</span>`:`<button class="btn ghost sm" data-act="more">설정</button>`}</div>`;
   const body=mv?'':(aud?`
   <div class="cta">${player?`<button class="btn" data-act="playstop">⏹ 그만 듣기</button>`:`<button class="btn" data-act="study" ${allUn.length?'':'disabled'}>학습 시작 (${allUn.length})</button>`}<button class="btn ghost" id="plbtn" data-act="play" ${n?'':'disabled'}>${player?((player.stalled||player.paused)?'▶ 이어 듣기':'⏹ 정지'):'▶ 전체 재생'}</button></div>
   <div class="rp"><span>반복</span>${[[1,'1번'],[3,'3번'],[0,'무한']].map(x=>`<button class="pill${rep===x[0]?' on':''}" data-act="rep" data-n="${x[0]}">${x[1]}</button>`).join('')}</div>
