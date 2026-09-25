@@ -61,9 +61,7 @@ details form{display:grid;gap:8px;margin-top:10px}
 select{font:inherit;color:var(--ink);background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:11px 13px}
 .tag{font:500 12px 'Noto Sans KR',sans-serif;background:var(--tint);color:var(--greenD);border-radius:8px;padding:1px 8px;margin-left:8px;vertical-align:middle}
 .w.edit{display:block}.w.edit form.add{margin:0}.w.edit .row{margin:4px 0 0}
-.afr{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .afm{font-size:13px;color:var(--sub)}
-.nosample .afr{display:none}
 .ov{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:20px;z-index:50}
 .dl{width:100%;max-width:340px;max-height:88vh;overflow-y:auto;background:var(--card);color:var(--ink);border:1.5px solid var(--line);border-radius:20px;padding:20px 46px 20px 20px;position:relative}
 .dlx{position:absolute;top:12px;right:12px;width:28px;height:28px;border-radius:50%;border:0;background:none;color:var(--sub);font-size:18px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center}
@@ -492,89 +490,6 @@ function closeDlg(){
 $('#dlg').addEventListener('click',e=>{});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(dlg&&dlg.k!=='cfg'&&dlg.k!=='tabs')closeDlg();else if(!dlg&&sheet)closeSheet()}});
 
-let SAMPLE=null;
-(async()=>{try{SAMPLE=await window.claude.use('sample')}catch(e){SAMPLE=null}if(!SAMPLE)document.body.classList.add('nosample')})();
-function promptFor(w,tabId){
-  const info=tabInfo(tabId);
-  const pronInstr=info.pron==='ipa'?'국제음성기호(IPA)로 적은 미국식 발음 하나만, 슬래시로 감싸서(예: /ˈwɔːtər/)'
-    :info.pron==='roman'?'헵번식 로마자 발음 표기(예: neko)'
-    :info.pron==='pinyin'?'한어병음(성조 포함)과 한글 발음을 가운뎃점으로 이어서(예: nǐ hǎo · 니하오)'
-    :'한국인이 읽기 쉬운 발음 표기';
-  const hInstr=info.pron==='roman'?', "h"=단어에 한자가 포함된 경우에만 히라가나로 읽는 법(한자가 없으면 빈 문자열)':'';
-  return '한국어 사용자를 위한 '+info.name+' 단어장 항목을 만들어요.\n단어: '+JSON.stringify(w)+'\nJSON 객체 하나만 답하세요. 키: "r"='+pronInstr+', "m"=한국어 뜻(가장 흔한 뜻 1~2개, 짧게), "e"=짧은 원어 예문 한 줄과 한국어 번역(예: "I drink water. (물을 마셔요.)")'+hInstr+'. 알 수 없는 값은 빈 문자열로 두세요.';
-}
-async function lookup(f,w,lang){
-  const say=x=>{const m=f.querySelector('.afm');if(m)m.textContent=x};
-  if(!w){say('먼저 단어를 입력하세요');return null}
-  if(!SAMPLE){say('자동 채우기를 지금은 쓸 수 없어요. 뜻을 직접 입력하세요');return null}
-  const b=f.querySelector('.afb');if(b)b.disabled=true;
-  say('불러오는 중…');
-  try{const r=await SAMPLE.json(promptFor(w,lang),{modelTier:'quick'});say('');return r&&typeof r==='object'?r:null}
-  catch(e){say(e&&e.code==='not_granted'?'사용을 허용해야 자동 채우기를 쓸 수 있어요':'불러오지 못했어요. 잠시 후 다시 시도하거나 직접 입력하세요');return null}
-  finally{if(b)b.disabled=false}
-}
-async function autofill(btn){
-  const f=btn.closest('form');if(!f)return;
-  const edit=f.dataset.form==='editw',s=sec();
-  const g=await lookup(f,f.elements.w.value.trim(),(s&&s.lang)||'en');
-  if(!g||!f.isConnected)return;
-  const set=(n,v)=>{
-    const el=f.elements[n];if(!el)return;v=String(v||'').trim();
-    if(edit){if(v)el.value=v;return}
-    if(!el.value.trim()||el.dataset.auto==='1'){el.value=v;if(v)el.dataset.auto='1';else delete el.dataset.auto}
-  };
-  set('r',g.r);set('m',g.m);set('e',g.e);set('h',g.h);
-  const m=f.querySelector('.afm');if(m)m.textContent=edit?'채웠어요. 확인하고 저장을 누르세요':'채웠어요. 확인하고 단어 추가를 누르세요';
-}
-let secBusy=false;
-function hasKanji(s){return /[\u4E00-\u9FFF\u3400-\u4DBF]/.test(s||'')}
-async function bulkAutofill(sid){
-  const cs=S.sections.find(x=>x.id===sid);if(!cs)return;
-  if(secBusy)return;
-  if(!SAMPLE){stat('자동 채우기를 지금은 쓸 수 없어요');return}
-  const pron=tabInfo(cs.lang).pron;
-  let todo=cs.words.filter(w=>!w.m||!w.m.trim()||(pron==='roman'&&hasKanji(w.w)&&!w.h));
-  if(!todo.length){stat('빈 칸인 단어가 없어요');return}
-  secBusy=true;render();
-  const fillOne=async w=>{
-    try{
-      const g=await SAMPLE.json(promptFor(w.w,cs.lang),{modelTier:'quick'});
-      if(g&&typeof g==='object'&&g.m){
-        if(!w.r&&g.r)w.r=String(g.r).trim();
-        if(!w.m||!w.m.trim())w.m=String(g.m).trim();
-        if(!w.e&&g.e)w.e=String(g.e).trim();
-        if(!w.h&&g.h)w.h=String(g.h).trim();
-        return true;
-      }
-    }catch(e){}
-    return false;
-  };
-  let done=0,failed=[];
-  for(let i=0;i<todo.length;i++){
-    stat('빈 칸 채우는 중… '+(i+1)+' / '+todo.length);
-    const ok=await fillOne(todo[i]);
-    if(ok)done++;else failed.push(todo[i]);
-    save();
-    await sleep(150);
-  }
-  if(failed.length){
-    stat('실패한 '+failed.length+'개 다시 시도하는 중…');
-    await sleep(400);
-    const stillFailed=[];
-    for(let i=0;i<failed.length;i++){
-      stat('다시 시도 중… '+(i+1)+' / '+failed.length);
-      const ok=await fillOne(failed[i]);
-      if(ok)done++;else stillFailed.push(failed[i]);
-      save();
-      await sleep(150);
-    }
-    failed=stillFailed;
-  }
-  secBusy=false;
-  stat(done+'개 채움'+(failed.length?', '+failed.length+'개 실패':''));
-  render();
-}
-
 function parseLine(l){
   l=l.trim();if(!l||l[0]==='#')return null;
   let e='';const i=l.indexOf(' | ');if(i>0){e=l.slice(i+3).trim();l=l.slice(0,i).trim()}
@@ -644,7 +559,7 @@ function openSheet(mode,w,secOverride){
   <div class="sht"><b>${edit?'단어 수정':'단어 추가'}</b>${edit?'':'<div class="seg"><button type="button" data-act="pane" data-p="one" class="on">한 개</button><button type="button" data-act="pane" data-p="many">여러 개</button></div>'}<button class="ic" data-act="sclose" aria-label="닫기">×</button></div>
   <form class="add" data-form="${edit?'editw':'addw'}"${edit?` data-id="${w.id}"`:''} data-pane="one">
     <input name="w" value="${val('w')}" placeholder="단어" required autocomplete="off">
-    <div class="afr"><button type="button" class="btn ghost afb sm" data-act="af">✨ 자동 채우기</button><span class="afm">${edit?'누르면 발음·뜻·예문을 새로 채워요':'뜻을 비워 두고 추가해도 자동으로 채워요'}</span></div>
+    <span class="afm"></span>
     <input name="r" value="${val('r')}" placeholder="${pronLabel(s.lang)}">
     <input name="m" value="${val('m')}" placeholder="뜻">
     <input name="e" value="${val('e')}" placeholder="예문 (선택)">
@@ -685,7 +600,7 @@ function doMove(targetId){
 
 function openMore(){
   dlg={k:'more'};
-  $('#dlg').innerHTML=`<div class="ov"><div class="dl menu" role="dialog" aria-modal="true" aria-label="더보기">${DLX}<button class="mi" data-act="rename">이름 변경</button><button class="mi" data-act="seccolor">색상 변경</button><button class="mi" data-act="movewords">단어 이동</button><button class="mi" data-act="delwords">단어 선택 삭제</button><button class="mi" data-act="dedupe">중복 단어 정리</button><button class="mi" data-act="secautofill">✨ 빈 칸 일괄 채우기</button><button class="mi" data-act="tx">텍스트 목록 가져오기 / 내보내기</button><button class="mi" data-act="dlgno">닫기</button></div></div>`;
+  $('#dlg').innerHTML=`<div class="ov"><div class="dl menu" role="dialog" aria-modal="true" aria-label="더보기">${DLX}<button class="mi" data-act="rename">이름 변경</button><button class="mi" data-act="seccolor">색상 변경</button><button class="mi" data-act="movewords">단어 이동</button><button class="mi" data-act="delwords">단어 선택 삭제</button><button class="mi" data-act="dedupe">중복 단어 정리</button><button class="mi" data-act="tx">텍스트 목록 가져오기 / 내보내기</button><button class="mi" data-act="dlgno">닫기</button></div></div>`;
 }
 function openColorPicker(sid){
   const isFav=sid==='fav';
@@ -1102,7 +1017,6 @@ document.addEventListener('click',e=>{
   else if(a==='rename'){closeDlg();view.renaming=!view.renaming;}
   else if(a==='seccolor'){closeDlg();openColorPicker(view.id);return;}
   else if(a==='favcolor'){openColorPicker('fav');return;}
-  else if(a==='secautofill'){closeDlg();bulkAutofill(view.id);return;}
   else if(a==='pickcolor'){
     const sid=dlg&&dlg.id;
     if(sid==='fav'){
@@ -1115,7 +1029,6 @@ document.addEventListener('click',e=>{
   }
   else if(a==='edittitle'){view.titleEdit=!view.titleEdit;render();return;}
   else if(a==='dels'){askDel({k:'s',id:s.id},'‘'+esc(s.name)+'’ 섹션을 삭제할까요?','단어 '+s.words.length+'개도 함께 삭제되고, 되돌릴 수 없어요.');return;}
-  else if(a==='af'){autofill(b);return;}
   else if(a==='add'){openSheet('add');return;}
   else if(a==='more'){openMore();return;}
   else if(a==='sclose'){closeSheet();return;}
@@ -1303,11 +1216,6 @@ document.addEventListener('submit',async e=>{
   }
   else if(t==='editw'){
     const v={w:d.get('w').trim(),r:(d.get('r')||'').trim(),m:d.get('m').trim(),e:(d.get('e')||'').trim(),h:(d.get('h')||'').trim()};
-    if(!v.m){
-      const g=await lookup(f,v.w,s.lang||'en');
-      if(!g||!g.m)return;
-      v.r=v.r||String(g.r||'').trim();v.m=String(g.m).trim();v.e=v.e||String(g.e||'').trim();v.h=v.h||String(g.h||'').trim();
-    }
     const cs=sec(),w=cs&&cs.words.find(x=>x.id===f.dataset.id);
     if(!w)return;
     w.w=v.w;w.r=v.r;w.m=v.m;w.e=v.e;w.h=v.h;save();
@@ -1342,11 +1250,6 @@ document.addEventListener('submit',async e=>{
   else if(t==='addw'){
     const more=!!(e.submitter&&e.submitter.value==='more');
     const v={w:d.get('w').trim(),r:(d.get('r')||'').trim(),m:d.get('m').trim(),e:(d.get('e')||'').trim(),h:(d.get('h')||'').trim()};
-    if(!v.m){
-      const g=await lookup(f,v.w,s.lang||'en');
-      if(!g||!g.m)return;
-      v.r=v.r||String(g.r||'').trim();v.m=String(g.m).trim();v.e=v.e||String(g.e||'').trim();v.h=v.h||String(g.h||'').trim();
-    }
     const cs=sec();if(!cs)return;
     const sig=v.w+'\u241F'+v.m;
     if(cs.words.some(x=>x.w===v.w&&x.m===v.m)&&f.dataset.dupok!==sig){
@@ -1375,13 +1278,7 @@ document.addEventListener('submit',async e=>{
       s.words.push({id:uid(),w:w.w,r:w.r,m:w.m,e:w.e,known:false});add++;
     });
     save();closeSheet();
-    const needsFill=s.words.some(x=>!x.m||!x.m.trim());
-    if(add&&needsFill&&SAMPLE){
-      stat(add+'개 추가 — 빈 칸 자동 채우는 중…');
-      bulkAutofill(s.id);
-    }else{
-      stat(add+'개 추가'+(skip?', '+skip+'개는 이미 있어 건너뜀':''));
-    }
+    stat(add+'개 추가'+(skip?', '+skip+'개는 이미 있어 건너뜀':''));
   }
   render();
 });
