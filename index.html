@@ -955,7 +955,7 @@ function secView(){
   ${mv?'':filterBar}
   ${search}
   <div id="listArea">${buildWordList(s)}</div>
-  ${mv?`<div class="sel"><span>${sel2.length}개 선택</span><span class="row" style="margin:0">${view.moveMode==='del'?`<button class="btn ghost sm" data-act="selall">${sel2.length&&sel2.length===s.words.length?'전체 해제':'전체 선택'}</button>`:''}<button class="btn ghost sm" data-act="movecancel">취소</button>${view.moveMode==='del'?`<button class="btn warn sm" data-act="delselect" ${sel2.length?'':'disabled'}>삭제</button>`:`<button class="btn sm" data-act="moveask" ${sel2.length?'':'disabled'}>이동</button>`}</span></div>`:`<button class="fab" data-act="add">＋ 단어 추가</button>`}`;
+  ${mv?`<div class="sel"><span>${sel2.length}개 선택</span><span class="row" style="margin:0"><button class="btn ghost sm" data-act="selall">${sel2.length&&sel2.length===s.words.length?'전체 해제':'전체 선택'}</button><button class="btn ghost sm" data-act="movecancel">취소</button>${view.moveMode==='del'?`<button class="btn warn sm" data-act="delselect" ${sel2.length?'':'disabled'}>삭제</button>`:`<button class="btn sm" data-act="moveask" ${sel2.length?'':'disabled'}>이동</button>`}</span></div>`:`<button class="fab" data-act="add">＋ 단어 추가</button>`}`;
 }
 
 function favView(){
