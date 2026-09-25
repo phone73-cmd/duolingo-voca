@@ -137,6 +137,13 @@ h1{font-size:32px}
 .totop{position:fixed;right:16px;bottom:calc(20px + env(safe-area-inset-bottom,0px));width:46px;height:46px;border-radius:50%;border:0;background:var(--ink);color:var(--bg);font-size:20px;box-shadow:0 6px 18px rgba(0,0,0,.25);cursor:pointer;opacity:0;pointer-events:none;transition:opacity .2s,bottom .2s;z-index:25}
 #app:has(.sel) ~ .totop{bottom:calc(88px + env(safe-area-inset-bottom,0px))}
 .totop.show{opacity:1;pointer-events:auto}
+.ptr{position:fixed;left:50%;top:calc(6px + env(safe-area-inset-top,0px));width:38px;height:38px;border-radius:50%;background:var(--card);border:1.5px solid var(--line);color:var(--sub);display:flex;align-items:center;justify-content:center;font-size:17px;box-shadow:0 6px 16px rgba(0,0,0,.18);z-index:30;pointer-events:none;transform:translate(-50%,-60px);transition:transform .1s linear,color .15s}
+.ptr.pulling{transition:none}
+.ptr.ready{color:var(--green)}
+.ptr .ptrarrow{display:inline-block;transition:transform .15s}
+.ptr.ready .ptrarrow{transform:rotate(180deg)}
+.ptr.spin .ptrarrow{animation:ptrspin .6s linear infinite}
+@keyframes ptrspin{to{transform:rotate(360deg)}}
 .fab{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:20;padding:14px 26px;border:0;border-radius:999px;background:var(--green);color:var(--onG);font:700 16px "Noto Sans KR",sans-serif;box-shadow:0 6px 18px rgba(0,0,0,.25);cursor:pointer}
 .menu{padding:6px 18px}
 .mi{display:block;width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--line);padding:15px 4px;font:inherit;color:var(--ink);cursor:pointer}
@@ -1291,6 +1298,48 @@ try{
     window.addEventListener('scroll',()=>{toTop.classList.toggle('show',window.scrollY>400)},{passive:true});
     toTop.addEventListener('click',()=>window.scrollTo({top:0,behavior:'smooth'}));
   }
+}catch(e){}
+try{
+  const PTR_TRIGGER=64,PTR_MAX=100;
+  let ptrEl=null,startY=0,pulling=false,ready=false;
+  const atTop=()=>(document.scrollingElement||document.documentElement).scrollTop<=0;
+  const ensurePtr=()=>{
+    if(!ptrEl){ptrEl=document.createElement('div');ptrEl.className='ptr';ptrEl.innerHTML='<span class="ptrarrow">↓</span>';document.body.appendChild(ptrEl)}
+    return ptrEl;
+  };
+  window.addEventListener('touchstart',e=>{
+    if(dlg||sheet||e.touches.length!==1||!atTop())return;
+    startY=e.touches[0].clientY;pulling=true;ready=false;
+  },{passive:true});
+  window.addEventListener('touchmove',e=>{
+    if(!pulling)return;
+    if(!atTop()){pulling=false;if(ptrEl)ptrEl.classList.remove('pulling');return}
+    const dy=e.touches[0].clientY-startY;
+    if(dy<=0)return;
+    e.preventDefault();
+    const pull=Math.min(dy*.5,PTR_MAX);
+    ready=pull>=PTR_TRIGGER;
+    const el=ensurePtr();
+    el.classList.add('pulling');
+    el.classList.toggle('ready',ready);
+    el.style.transform=`translate(-50%, ${pull-60}px)`;
+  },{passive:false});
+  const endPull=()=>{
+    if(!pulling)return;
+    pulling=false;
+    if(!ptrEl)return;
+    ptrEl.classList.remove('pulling');
+    if(ready){
+      ptrEl.classList.add('spin');
+      ptrEl.style.transform='translate(-50%, 26px)';
+      setTimeout(()=>location.reload(),200);
+    }else{
+      ptrEl.classList.remove('ready');
+      ptrEl.style.transform='translate(-50%, -60px)';
+    }
+  };
+  window.addEventListener('touchend',endPull,{passive:true});
+  window.addEventListener('touchcancel',endPull,{passive:true});
 }catch(e){}
 startLast=lastId;
 render();
