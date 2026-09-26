@@ -583,15 +583,17 @@ function toggleSel(id){
 }
 function openMovePick(){
   const s=sec();if(!s)return;
+  const copying=view.moveMode==='copy';
   const targets=S.sections.filter(x=>x.lang===s.lang&&x.id!==s.id);
   if(!targets.length){
     dlg={k:'info'};
-    $('#dlg').innerHTML=`<div class="ov"><div class="dl" role="dialog" aria-modal="true">${DLX}<p class="dm">이동할 다른 섹션이 없어요</p><p class="ds">${esc(tabName(s.lang))} 안에 다른 섹션을 먼저 만들어 주세요.</p><div class="dr"><button class="btn" data-act="dlgno">닫기</button></div></div></div>`;
+    $('#dlg').innerHTML=`<div class="ov"><div class="dl" role="dialog" aria-modal="true">${DLX}<p class="dm">${copying?'복사':'이동'}할 다른 섹션이 없어요</p><p class="ds">${esc(tabName(s.lang))} 안에 다른 섹션을 먼저 만들어 주세요.</p><div class="dr"><button class="btn" data-act="dlgno">닫기</button></div></div></div>`;
     return;
   }
   dlg={k:'movepick'};
-  const opts=targets.map(x=>`<button class="mi" data-act="moveto" data-id="${x.id}">${esc(x.name)}<span class="tc" style="float:right">${x.words.length}개</span></button>`).join('');
-  $('#dlg').innerHTML=`<div class="ov"><div class="dl menu" role="dialog" aria-modal="true" aria-label="이동할 섹션">${DLX}<p class="dm" style="padding:0 4px 8px">${(view.sel||[]).length}개 단어를 어디로 옮길까요?</p>${opts}<button class="mi" data-act="dlgno">취소</button></div></div>`;
+  const act=copying?'copyto':'moveto';
+  const opts=targets.map(x=>`<button class="mi" data-act="${act}" data-id="${x.id}">${esc(x.name)}<span class="tc" style="float:right">${x.words.length}개</span></button>`).join('');
+  $('#dlg').innerHTML=`<div class="ov"><div class="dl menu" role="dialog" aria-modal="true" aria-label="${copying?'복사':'이동'}할 섹션">${DLX}<p class="dm" style="padding:0 4px 8px">${(view.sel||[]).length}개 단어를 어디로 ${copying?'복사할까요':'옮길까요'}?</p>${opts}<button class="mi" data-act="dlgno">취소</button></div></div>`;
 }
 function doMove(targetId){
   const s=sec(),tgt=S.sections.find(x=>x.id===targetId);
@@ -604,10 +606,20 @@ function doMove(targetId){
   view.moving=false;view.sel=[];view.moveMode=null;
   closeDlg();save();render();
 }
+function doCopy(targetId){
+  const s=sec(),tgt=S.sections.find(x=>x.id===targetId);
+  if(!s||!tgt)return;
+  const ids=view.sel||[],copying=s.words.filter(w=>ids.includes(w.id));
+  copying.forEach(w=>{
+    if(!tgt.words.some(x=>x.w===w.w&&x.m===w.m))tgt.words.push({...w,id:uid()});
+  });
+  view.moving=false;view.sel=[];view.moveMode=null;
+  closeDlg();save();render();
+}
 
 function openMore(){
   dlg={k:'more'};
-  $('#dlg').innerHTML=`<div class="ov"><div class="dl menu" role="dialog" aria-modal="true" aria-label="더보기">${DLX}<button class="mi" data-act="rename">이름 변경</button><button class="mi" data-act="seccolor">색상 변경</button><button class="mi" data-act="movewords">단어 이동</button><button class="mi" data-act="delwords">단어 선택 삭제</button><button class="mi" data-act="dedupe">중복 단어 정리</button><button class="mi" data-act="tx">텍스트 목록 가져오기 / 내보내기</button><button class="mi" data-act="dlgno">닫기</button></div></div>`;
+  $('#dlg').innerHTML=`<div class="ov"><div class="dl menu" role="dialog" aria-modal="true" aria-label="더보기">${DLX}<button class="mi" data-act="rename">이름 변경</button><button class="mi" data-act="seccolor">색상 변경</button><button class="mi" data-act="movewords">단어 이동</button><button class="mi" data-act="copywords">단어 복사</button><button class="mi" data-act="delwords">단어 선택 삭제</button><button class="mi" data-act="dedupe">중복 단어 정리</button><button class="mi" data-act="tx">텍스트 목록 가져오기 / 내보내기</button><button class="mi" data-act="dlgno">닫기</button></div></div>`;
 }
 function openColorPicker(sid){
   const isFav=sid==='fav';
@@ -963,7 +975,7 @@ function secView(){
   ${mv?'':filterBar}
   ${search}
   <div id="listArea">${buildWordList(s)}</div>
-  ${mv?`<div class="sel"><span>${sel2.length}개 선택</span><span class="row" style="margin:0"><button class="btn ghost sm" data-act="selall">${sel2.length&&sel2.length===s.words.length?'전체 해제':'전체 선택'}</button><button class="btn ghost sm" data-act="movecancel">취소</button>${view.moveMode==='del'?`<button class="btn warn sm" data-act="delselect" ${sel2.length?'':'disabled'}>삭제</button>`:`<button class="btn sm" data-act="moveask" ${sel2.length?'':'disabled'}>이동</button>`}</span></div>`:`<button class="fab" data-act="add">＋ 단어 추가</button>`}`;
+  ${mv?`<div class="sel"><span>${sel2.length}개 선택</span><span class="row" style="margin:0"><button class="btn ghost sm" data-act="selall">${sel2.length&&sel2.length===s.words.length?'전체 해제':'전체 선택'}</button><button class="btn ghost sm" data-act="movecancel">취소</button>${view.moveMode==='del'?`<button class="btn warn sm" data-act="delselect" ${sel2.length?'':'disabled'}>삭제</button>`:view.moveMode==='copy'?`<button class="btn sm" data-act="copyask" ${sel2.length?'':'disabled'}>복사</button>`:`<button class="btn sm" data-act="moveask" ${sel2.length?'':'disabled'}>이동</button>`}</span></div>`:`<button class="fab" data-act="add">＋ 단어 추가</button>`}`;
 }
 
 function favView(){
@@ -1053,6 +1065,7 @@ document.addEventListener('click',e=>{
   }
   else if(a==='selword'){toggleSel(id);return;}
   else if(a==='movewords'){closeDlg();if(player)stopPlay();view.moving=true;view.sel=[];view.open=null;view.moveMode='move';}
+  else if(a==='copywords'){closeDlg();if(player)stopPlay();view.moving=true;view.sel=[];view.open=null;view.moveMode='copy';}
   else if(a==='delwords'){closeDlg();if(player)stopPlay();view.moving=true;view.sel=[];view.open=null;view.moveMode='del';}
   else if(a==='movecancel'){view.moving=false;view.sel=[];view.moveMode=null;}
   else if(a==='selall'){
@@ -1086,6 +1099,7 @@ document.addEventListener('click',e=>{
     return;
   }
   else if(a==='moveask'){openMovePick();return;}
+  else if(a==='copyask'){openMovePick();return;}
   else if(a==='delselect'){
     const ids=(view.sel||[]).slice();
     if(!ids.length)return;
@@ -1093,6 +1107,7 @@ document.addEventListener('click',e=>{
     return;
   }
   else if(a==='moveto'){doMove(id);return;}
+  else if(a==='copyto'){doCopy(id);return;}
   else if(a==='newsec'){view.adding=true;}
   else if(a==='cancelnew'){view.adding=false;}
   else if(a==='pane'){
