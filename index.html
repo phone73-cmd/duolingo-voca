@@ -292,6 +292,8 @@ let S={sections:[],tabs:[]};
 function ensureTabs(){
   if(!Array.isArray(S.tabs)||!S.tabs.length){
     S.tabs=[{id:'en',name:withFlag('영어','en-US'),pron:'ipa',locale:'en-US',audio:true},{id:'ja',name:withFlag('일본어','ja-JP'),pron:'roman',locale:'ja-JP',audio:true}];
+  }else{
+    S.tabs=S.tabs.map(t=>Object.assign({},t,{name:withFlag(t.name,t.locale||'en-US')}));
   }
 }
 try{const r=localStorage.getItem('vocab-v1');if(r)S=JSON.parse(r)}catch(e){}
@@ -376,7 +378,7 @@ function targetId(last){
   if(start.mode==='sec')return S.sections.some(x=>x.id===start.sec)?start.sec:'';
   return S.sections.some(x=>x.id===last)?last:'';
 }
-const APP_VERSION='Ver.31';
+const APP_VERSION='Ver.32';
 const stat=m=>{const e=$('#stat');if(e)e.textContent=m};
 async function flush(){
   if(!ref)return;
