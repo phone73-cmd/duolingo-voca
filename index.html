@@ -334,8 +334,8 @@ function applyBg(){
   try{
     const root=document.documentElement;
     if(BGCOLOR&&!isDarkNow()){
-      root.style.setProperty('--bg',BGCOLOR);
-      root.style.setProperty('--card',`color-mix(in srgb, ${BGCOLOR} 30%, white 70%)`);
+      root.style.setProperty('--bg',`color-mix(in srgb, ${BGCOLOR} 18%, white 82%)`);
+      root.style.setProperty('--card',`color-mix(in srgb, ${BGCOLOR} 55%, white 45%)`);
     }else{
       root.style.removeProperty('--bg');
       root.style.removeProperty('--card');
