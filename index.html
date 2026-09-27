@@ -109,6 +109,8 @@ h1{font-size:32px}
 .secx{width:34px;height:34px;border-radius:50%;border:0;background:var(--card);color:var(--sub);cursor:pointer;flex:none;display:flex;align-items:center;justify-content:center}
 .secx svg{width:18px;height:18px}
 .secx:hover{color:var(--red)}
+.secreorder{display:flex;gap:6px;flex:none}
+.ic.sm:disabled{opacity:.35;cursor:default}
 .addcard{display:block;width:100%;margin:14px 0;padding:16px;border:1.5px dashed var(--line);border-radius:20px;background:none;color:var(--sub);font:inherit;cursor:pointer}
 .prog{display:flex;align-items:center;gap:12px;margin:6px 0 18px;color:var(--sub);font-size:14px;white-space:nowrap}
 .prog .bar{flex:1}
@@ -468,9 +470,15 @@ function home(){
   const favColor=getFavColor(tab);
   const favTint=(favColor&&!isDarkNow())?` style="background:${favColor};color:#1f2a37;--sub:#667085"`:'';
   const favCard=`<div class="sec fav"${favTint}><button class="secBody" data-act="openfav"><span class="sn">⭐ 즐겨찾기</span><span class="cnt">${favN}개 단어</span></button></div>`;
-  const cards=S.sections.filter(s=>lang(s)===tab).map(s=>{const n=s.words.length,k=s.words.filter(w=>w.known).length;
+  const secList=S.sections.filter(s=>lang(s)===tab);
+  const reordering=!!view.reorderSec;
+  const cards=secList.map((s,i)=>{const n=s.words.length,k=s.words.filter(w=>w.known).length;
     const tint=(s.color&&!isDarkNow())?` style="background:${s.color};color:#1f2a37;--sub:#667085"`:'';
-    return `<div class="sec"${tint}><button class="secBody" data-act="open" data-id="${s.id}"><span class="sn">${esc(s.name)}</span><span class="cnt">${k} / ${n} 외움</span><span class="bar"><i style="width:${n?k/n*100:0}%"></i></span></button><button class="secx" data-act="dels" data-sec="${s.id}" aria-label="‘${esc(s.name)}’ 섹션 삭제"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16"/><path d="M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13"/><path d="M9 7V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v3"/></svg></button></div>`}).join('');
+    const trail=reordering
+      ?`<div class="secreorder"><button class="ic sm" data-act="secup" data-sec="${s.id}" ${i===0?'disabled':''} aria-label="‘${esc(s.name)}’ 위로">▲</button><button class="ic sm" data-act="secdown" data-sec="${s.id}" ${i===secList.length-1?'disabled':''} aria-label="‘${esc(s.name)}’ 아래로">▼</button></div>`
+      :`<button class="secx" data-act="dels" data-sec="${s.id}" aria-label="‘${esc(s.name)}’ 섹션 삭제"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16"/><path d="M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13"/><path d="M9 7V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v3"/></svg></button>`;
+    return `<div class="sec"${tint}><button class="secBody" data-act="open" data-id="${s.id}"><span class="sn">${esc(s.name)}</span><span class="cnt">${k} / ${n} 외움</span><span class="bar"><i style="width:${n?k/n*100:0}%"></i></span></button>${trail}</div>`}).join('');
+  const reorderBar=secList.length>1?`<div style="display:flex;justify-content:flex-end;margin:6px 0"><button class="btn ghost sm" data-act="reordersec">${reordering?'완료':'↕ 순서 변경'}</button></div>`:'';
   const tabs=S.tabs.map(t0=>`<button role="tab" aria-selected="${tab===t0.id}" class="tab${tab===t0.id?' on':''}" data-act="tab" data-l="${t0.id}">${esc(t0.name)}<small>${S.sections.filter(s=>lang(s)===t0.id).length}</small></button>`).join('')+`<button class="tab add" data-act="tabsopen" aria-label="탭 추가">＋</button>`;
   const form=(view.adding||!cards)
     ?`<form class="row" data-form="addsec"><input name="n" placeholder="${tabName(tab)} 섹션 이름 (예: 섹션 1 · 기초)" required><button class="btn">추가</button>${cards?'<button type="button" class="btn ghost" data-act="cancelnew">취소</button>':''}</form>`
@@ -481,7 +489,8 @@ function home(){
   return `${titleHead}
   <div class="tabs" role="tablist">${tabs}</div>
   ${cards?favCard:''}
-  ${cards||`<p class="empty">${tabName(tab)} 섹션이 아직 없어요.</p>`}${form}`;
+  ${cards?reorderBar:''}
+  ${cards||`<p class="empty">${tabName(tab)} 섹션이 아직 없어요.</p>`}${reordering?'':form}`;
 }
 
 let dlg=null;
@@ -1049,6 +1058,16 @@ document.addEventListener('click',e=>{
   }
   else if(a==='edittitle'){view.titleEdit=!view.titleEdit;render();return;}
   else if(a==='dels'){askDel({k:'s',id:s.id},'‘'+esc(s.name)+'’ 섹션을 삭제할까요?','단어 '+s.words.length+'개도 함께 삭제되고, 되돌릴 수 없어요.');return;}
+  else if(a==='reordersec'){view.reorderSec=!view.reorderSec;render();return;}
+  else if(a==='secup'||a==='secdown'){
+    const list=S.sections.filter(x=>x.lang===tab);
+    const i=list.findIndex(x=>x.id===secId),j=a==='secup'?i-1:i+1;
+    if(i<0||j<0||j>=list.length)return;
+    const ia=S.sections.indexOf(list[i]),ib=S.sections.indexOf(list[j]);
+    [S.sections[ia],S.sections[ib]]=[S.sections[ib],S.sections[ia]];
+    save();render();
+    return;
+  }
   else if(a==='add'){openSheet('add');return;}
   else if(a==='more'){openMore();return;}
   else if(a==='sclose'){closeSheet();return;}
