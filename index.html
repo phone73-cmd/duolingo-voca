@@ -334,15 +334,31 @@ try{BGCOLOR=localStorage.getItem('vocab-bgcolor')||''}catch(e){}
 let BGINT=18;
 try{BGINT=Number(localStorage.getItem('vocab-bgint'))||18}catch(e){}
 const BGINT_STEPS=[[10,'연하게'],[18,'보통'],[30,'진하게']];
+function parseColor(c){
+  c=(c||'').trim();
+  if(c[0]==='#'){
+    let h=c.slice(1);
+    if(h.length===3)h=h.split('').map(x=>x+x).join('');
+    return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];
+  }
+  const m=c.match(/rgba?\(([^)]+)\)/);
+  if(m)return m[1].split(',').slice(0,3).map(n=>parseInt(n.trim(),10));
+  return [255,255,255];
+}
+function mixColor(c1,pct,c2){
+  const [r1,g1,b1]=parseColor(c1),[r2,g2,b2]=parseColor(c2||'#ffffff'),t=pct/100;
+  const r=Math.round(r1*t+r2*(1-t)),g=Math.round(g1*t+g2*(1-t)),b=Math.round(b1*t+b2*(1-t));
+  return `rgb(${r}, ${g}, ${b})`;
+}
 function applyBg(){
   try{
     const root=document.documentElement;
     if(BGCOLOR&&!isDarkNow()){
       const cardPct=Math.min(BGINT+37,90);
-      root.style.setProperty('--bg',`color-mix(in srgb, ${BGCOLOR} ${BGINT}%, white ${100-BGINT}%)`);
-      root.style.setProperty('--card',`color-mix(in srgb, ${BGCOLOR} ${cardPct}%, white ${100-cardPct}%)`);
-      root.style.setProperty('--green',`color-mix(in srgb, ${BGCOLOR} 90%, black 10%)`);
-      root.style.setProperty('--greenD',`color-mix(in srgb, ${BGCOLOR} 70%, black 30%)`);
+      root.style.setProperty('--bg',mixColor(BGCOLOR,BGINT,'#ffffff'));
+      root.style.setProperty('--card',mixColor(BGCOLOR,cardPct,'#ffffff'));
+      root.style.setProperty('--green',mixColor(BGCOLOR,90,'#000000'));
+      root.style.setProperty('--greenD',mixColor(BGCOLOR,70,'#000000'));
       root.style.setProperty('--onG','#1f2a37');
     }else{
       root.style.removeProperty('--bg');
@@ -356,7 +372,7 @@ function applyBg(){
 applyBg();
 const PASTELS=['#ffd6d6','#ffe4c2','#fff3b0','#e2f3c9','#c9ecd9','#c7ecee','#cfe0ff','#dcd0ff','#f6d1e6'];
 const SECINT_STEPS=[[35,'연하게'],[60,'보통'],[85,'진하게']];
-const secEffColor=s=>{const i=s.colorInt||60;return `color-mix(in srgb, ${s.color} ${i}%, white ${100-i}%)`};
+const secEffColor=s=>{const i=s.colorInt||60;return mixColor(s.color,i,'#ffffff')};
 let ref=null,timer=null,busy=false,again=false,first=true,ver=0,sent=0,lastLocal=0,lastId='',startLast='';
 try{lastId=localStorage.getItem('vocab-last')||''}catch(e){}
 let start={mode:'last',sec:''};
@@ -1024,7 +1040,7 @@ function secView(){
   <div id="pn" class="pl"></div>`:`
   <div class="cta"><button class="btn" data-act="study" style="grid-column:1/-1" ${allUn.length?'':'disabled'}>학습 시작 (${allUn.length})</button></div>`);
   const sel2=view.sel||[];
-  const btnScope=(s.color&&!isDarkNow())?` style="--green:color-mix(in srgb, ${secEffColor(s)} 90%, black 10%);--greenD:color-mix(in srgb, ${secEffColor(s)} 70%, black 30%)"`:'';
+  const btnScope=(s.color&&!isDarkNow())?` style="--green:${mixColor(secEffColor(s),90,'#000000')};--greenD:${mixColor(secEffColor(s),70,'#000000')}"`:'';
   return `<div${btnScope}><button class="link" data-act="home">← ${tabName(s.lang)} 섹션</button>${head}
   <div class="prog"><span>${allKn.length} / ${n} 외움</span><span class="bar"><i style="width:${n?allKn.length/n*100:0}%"></i></span></div>${body}
   ${mv?'':filterBar}
