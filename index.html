@@ -216,7 +216,7 @@ h1{font-size:32px}
 .cfgdl{width:100%;max-width:430px;max-height:calc(100dvh - 28px);max-height:calc(-webkit-fill-available - 28px);overflow-y:auto;overscroll-behavior:contain;padding:0 18px 14px;border:1px solid rgba(61,154,79,.14);border-radius:28px;background:linear-gradient(180deg,var(--card) 0%,var(--card) 72%,var(--bg) 100%);box-shadow:0 24px 70px rgba(0,0,0,.22);scrollbar-width:thin}
 .cfgdl::-webkit-scrollbar{width:5px}.cfgdl::-webkit-scrollbar-thumb{background:var(--line);border-radius:10px}
 .cfgdl #cfgt{position:sticky;top:0;z-index:2;margin:0 -18px;padding:21px 18px 6px;background:linear-gradient(180deg,var(--card) 78%,transparent);font:400 22px/1.25 Jua,"Noto Sans KR",sans-serif;letter-spacing:-.2px}
-.cfgdl #cfgt::before{content:'⚙';display:inline-flex;width:34px;height:34px;align-items:center;justify-content:center;margin-right:9px;border-radius:12px;background:var(--tint);font:17px/1 system-ui,sans-serif;vertical-align:-5px}
+.cfgdl #cfgt::before{content:'⚙';display:inline-flex;width:34px;height:34px;align-items:center;justify-content:center;margin-left:-18px;margin-right:9px;border-radius:12px;background:var(--tint);font:17px/1 system-ui,sans-serif;vertical-align:-5px}
 .cfgdl>.ds{margin:0 0 14px;padding-left:2px;color:var(--sub);font-size:13px;line-height:1.55}
 .cfgdl>.opt{margin:5px 0;padding:10px 12px;border:1px solid var(--line);border-radius:13px;background:rgba(255,255,255,.42);transition:.15s ease}
 .cfgdl>.opt:has(input:checked){border-color:var(--green);background:var(--tint);box-shadow:0 0 0 2px rgba(61,154,79,.08)}
@@ -239,6 +239,7 @@ h1{font-size:32px}
   .cfgov{padding:8px;align-items:flex-end}
   .cfgdl{max-width:none;max-height:calc(100dvh - 16px);max-height:calc(-webkit-fill-available - 16px);border-radius:25px 25px 20px 20px;padding-left:14px;padding-right:14px}
   .cfgdl #cfgt{margin-left:-14px;margin-right:-14px;padding-left:14px;padding-right:14px}
+  .cfgdl #cfgt::before{margin-left:-14px}
   .cfgdl .dr{margin-left:-14px;margin-right:-14px;padding-left:14px;padding-right:14px}
 }
 @supports (-webkit-touch-callout:none){.cfgov{position:fixed!important;inset:0!important;overflow:hidden!important}.cfgdl{max-height:calc(100dvh - 16px);max-height:calc(-webkit-fill-available - 16px)}}
