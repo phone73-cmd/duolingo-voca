@@ -336,9 +336,15 @@ function applyBg(){
     if(BGCOLOR&&!isDarkNow()){
       root.style.setProperty('--bg',`color-mix(in srgb, ${BGCOLOR} 18%, white 82%)`);
       root.style.setProperty('--card',`color-mix(in srgb, ${BGCOLOR} 55%, white 45%)`);
+      root.style.setProperty('--green',`color-mix(in srgb, ${BGCOLOR} 90%, black 10%)`);
+      root.style.setProperty('--greenD',`color-mix(in srgb, ${BGCOLOR} 70%, black 30%)`);
+      root.style.setProperty('--onG','#1f2a37');
     }else{
       root.style.removeProperty('--bg');
       root.style.removeProperty('--card');
+      root.style.removeProperty('--green');
+      root.style.removeProperty('--greenD');
+      root.style.removeProperty('--onG');
     }
   }catch(e){}
 }
