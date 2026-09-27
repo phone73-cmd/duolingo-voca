@@ -376,7 +376,7 @@ function targetId(last){
   if(start.mode==='sec')return S.sections.some(x=>x.id===start.sec)?start.sec:'';
   return S.sections.some(x=>x.id===last)?last:'';
 }
-const APP_VERSION='Ver.28';
+const APP_VERSION='Ver.29';
 const stat=m=>{const e=$('#stat');if(e)e.textContent=m};
 async function flush(){
   if(!ref)return;
@@ -753,11 +753,17 @@ function openCfg(){
   const bgSw=`<button class="csw${BGCOLOR?'':' on'}" data-act="pickbg" data-c="" aria-label="기본 배경색">✕</button>`+
     PASTELS.map(c=>`<button class="csw${BGCOLOR===c?' on':''}" data-act="pickbg" data-c="${c}" style="background:${c}" aria-label="파스텔 배경색"></button>`).join('');
   const bgIntRow=BGCOLOR?`<p class="ds" style="margin:8px 0 6px">농도</p><div class="rp" style="margin:0">${BGINT_STEPS.map(([v,,l])=>`<button class="pill${BGINT===v?' on':''}" data-act="pickbgint" data-v="${v}">${l}</button>`).join('')}</div>`:'';
-  $('#dlg').innerHTML=`<div class="ov cfgov"><div class="dl cfgdl" role="dialog" aria-modal="true" aria-labelledby="cfgt"><p id="cfgt" class="dm">설정</p><p class="dm" style="margin-top:4px">시작 화면</p><p class="ds">앱을 다시 열 때 처음 보이는 화면을 골라요.</p>${r('last','마지막 화면')}${r('home','첫 화면')}${r('sec','섹션 지정')}<select id="ss" style="margin:8px 0 4px" aria-label="시작 섹션"${secs.length?'':' disabled'}>${opts||'<option>섹션이 없어요</option>'}</select><p class="dm" style="margin-top:4px!important">배경</p>${rt('system','시스템 설정 따름')}${rt('light','기본 (라이트)')}${rt('dark','다크')}<p class="ds" style="margin:6px 0 6px">배경 색상 (라이트 모드에서만 적용돼요)</p><div class="cgrid">${bgSw}</div>${bgIntRow}<p class="dm" style="margin-top:16px">발음 음성</p>${S.tabs.filter(t0=>t0.audio!==false).map(t0=>{
+  $('#dlg').innerHTML=`<div class="ov cfgov"><div class="dl cfgdl" role="dialog" aria-modal="true" aria-labelledby="cfgt"><p id="cfgt" class="dm">설정</p><p id="cfgdiag" class="ds" style="font-size:10px;line-height:1.5;word-break:break-all;color:#c00;background:#fffbe6;padding:6px 8px;border-radius:8px;margin:0 0 10px"></p><p class="dm" style="margin-top:4px">시작 화면</p><p class="ds">앱을 다시 열 때 처음 보이는 화면을 골라요.</p>${r('last','마지막 화면')}${r('home','첫 화면')}${r('sec','섹션 지정')}<select id="ss" style="margin:8px 0 4px" aria-label="시작 섹션"${secs.length?'':' disabled'}>${opts||'<option>섹션이 없어요</option>'}</select><p class="dm" style="margin-top:4px!important">배경</p>${rt('system','시스템 설정 따름')}${rt('light','기본 (라이트)')}${rt('dark','다크')}<p class="ds" style="margin:6px 0 6px">배경 색상 (라이트 모드에서만 적용돼요)</p><div class="cgrid">${bgSw}</div>${bgIntRow}<p class="dm" style="margin-top:16px">발음 음성</p>${S.tabs.filter(t0=>t0.audio!==false).map(t0=>{
     const has=voicesOf(t0.id).length>0;
     const hint=has?'':`<p class="ds" style="margin:2px 0 8px">${esc(t0.name)} 음성이 없어요. 안드로이드는 기기 설정 → 일반 관리(또는 시스템) → 언어 및 입력 → 텍스트 음성 변환 출력 → Google 음성 엔진 → 언어에서 해당 언어 음성 데이터를 내려받으면 나타나요.</p>`;
     return `<div class="vrow"><div class="selwrap"><select id="vo-${t0.id}" data-tab="${t0.id}" aria-label="${esc(t0.name)} 음성">${voiceOptions(t0.id)}</select></div><button class="btn ghost sm" data-act="vprev" data-l="${t0.id}" ${has?'':'disabled'}>▶ ${esc(t0.name)}</button></div>${hint}`;
   }).join('')||'<p class="ds">발음 듣기를 켠 탭이 없어요.</p>'}<div class="vrow two"><div class="selwrap"><select id="vo-rate" aria-label="속도">${[[.7,'느리게'],[.9,'보통'],[1.1,'빠르게']].map(x=>`<option value="${x[0]}"${TTS.rate===x[0]?' selected':''}>속도 · ${x[1]}</option>`).join('')}</select></div><div class="selwrap"><select id="vo-gap" aria-label="단어 간격">${[1,1.5].map(n=>`<option value="${n}"${TTS.gap===n?' selected':''}>간격 · ${n}초</option>`).join('')}</select></div></div><label class="opt" style="padding:8px 0;align-items:center"><input type="checkbox" id="vo-rm" ${TTS.readMeaning?'checked':''} class="tbchk"><span style="line-height:18px">재생 시 뜻도 함께 읽기</span></label><div class="vrow"><div class="selwrap"><select id="vo-_ko" aria-label="뜻 읽기 음성">${koVoiceOptions()}</select></div><button class="btn ghost sm" data-act="vprevko" ${koVoicesOf().length?'':'disabled'}>▶ 뜻 미리듣기</button></div><div class="dr"><button class="btn ghost sm" data-act="resetall">설정값 초기화</button><button class="btn ghost" data-act="bk">백업 / 복원</button><button class="btn" id="dlno" data-act="dlgno">닫기(저장)</button></div></div></div>`;
+  const ov=$('.cfgov');
+  if(ov){
+    const cs=getComputedStyle(ov);
+    const diag=[`w=${innerWidth}x${innerHeight}`,`dpr=${devicePixelRatio||1}`,`bf=${cs.backdropFilter||'-'}`,`wbf=${cs.webkitBackdropFilter||'-'}`,`sup=${typeof CSS!=='undefined'&&CSS.supports&&CSS.supports('backdrop-filter','blur(1px)')}`,`wsup=${typeof CSS!=='undefined'&&CSS.supports&&CSS.supports('-webkit-backdrop-filter','blur(1px)')}`,`touchCallout=${matchMedia('(-webkit-touch-callout:none)').matches}`,`reduceTransp=${matchMedia('(prefers-reduced-transparency:reduce)').matches}`,`ua=${navigator.userAgent}`].join(' | ');
+    const d=$('#cfgdiag');if(d)d.textContent=diag;
+  }
 }
 $('#dlg').addEventListener('change',async e=>{
   if(dlg&&dlg.k==='bk'&&e.target.id==='bkf'){const f=e.target.files&&e.target.files[0];if(f)importJson(await f.text());return}
