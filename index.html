@@ -331,12 +331,16 @@ function isDarkNow(){
 try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{applyBg();if(THEME==='system')render()})}catch(e){}
 let BGCOLOR='';
 try{BGCOLOR=localStorage.getItem('vocab-bgcolor')||''}catch(e){}
+let BGINT=18;
+try{BGINT=Number(localStorage.getItem('vocab-bgint'))||18}catch(e){}
+const BGINT_STEPS=[[10,'연하게'],[18,'보통'],[30,'진하게']];
 function applyBg(){
   try{
     const root=document.documentElement;
     if(BGCOLOR&&!isDarkNow()){
-      root.style.setProperty('--bg',`color-mix(in srgb, ${BGCOLOR} 18%, white 82%)`);
-      root.style.setProperty('--card',`color-mix(in srgb, ${BGCOLOR} 55%, white 45%)`);
+      const cardPct=Math.min(BGINT+37,90);
+      root.style.setProperty('--bg',`color-mix(in srgb, ${BGCOLOR} ${BGINT}%, white ${100-BGINT}%)`);
+      root.style.setProperty('--card',`color-mix(in srgb, ${BGCOLOR} ${cardPct}%, white ${100-cardPct}%)`);
       root.style.setProperty('--green',`color-mix(in srgb, ${BGCOLOR} 90%, black 10%)`);
       root.style.setProperty('--greenD',`color-mix(in srgb, ${BGCOLOR} 70%, black 30%)`);
       root.style.setProperty('--onG','#1f2a37');
@@ -351,6 +355,8 @@ function applyBg(){
 }
 applyBg();
 const PASTELS=['#ffd6d6','#ffe4c2','#fff3b0','#e2f3c9','#c9ecd9','#c7ecee','#cfe0ff','#dcd0ff','#f6d1e6'];
+const SECINT_STEPS=[[35,'연하게'],[60,'보통'],[85,'진하게']];
+const secEffColor=s=>{const i=s.colorInt||60;return `color-mix(in srgb, ${s.color} ${i}%, white ${100-i}%)`};
 let ref=null,timer=null,busy=false,again=false,first=true,ver=0,sent=0,lastLocal=0,lastId='',startLast='';
 try{lastId=localStorage.getItem('vocab-last')||''}catch(e){}
 let start={mode:'last',sec:''};
@@ -506,7 +512,7 @@ function home(){
   const secList=S.sections.filter(s=>lang(s)===tab);
   const reordering=!!view.reorderSec;
   const cards=secList.map((s,i)=>{const n=s.words.length,k=s.words.filter(w=>w.known).length;
-    const tint=(s.color&&!isDarkNow())?` style="background:${s.color};color:#1f2a37;--sub:#667085"`:'';
+    const tint=(s.color&&!isDarkNow())?` style="background:${secEffColor(s)};color:#1f2a37;--sub:#667085"`:'';
     const trail=reordering
       ?`<div class="secreorder"><button class="ic sm" data-act="secup" data-sec="${s.id}" ${i===0?'disabled':''} aria-label="‘${esc(s.name)}’ 위로">▲</button><button class="ic sm" data-act="secdown" data-sec="${s.id}" ${i===secList.length-1?'disabled':''} aria-label="‘${esc(s.name)}’ 아래로">▼</button></div>`
       :`<button class="secx" data-act="dels" data-sec="${s.id}" aria-label="‘${esc(s.name)}’ 섹션 삭제"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16"/><path d="M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13"/><path d="M9 7V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v3"/></svg></button>`;
@@ -671,7 +677,9 @@ function openColorPicker(sid){
   const cur=(isFav?getFavColor(tab):cs.color)||'';
   const sws=`<button class="csw${cur?'':' on'}" data-act="pickcolor" data-c="" aria-label="기본 색상">✕</button>`+
     PASTELS.map(c=>`<button class="csw${cur===c?' on':''}" data-act="pickcolor" data-c="${c}" style="background:${c}" aria-label="파스텔 색상"></button>`).join('');
-  $('#dlg').innerHTML=`<div class="ov"><div class="dl" role="dialog" aria-modal="true" aria-labelledby="clh">${DLX}<p id="clh" class="dm">${isFav?'즐겨찾기':'섹션'} 색상</p><p class="ds">파스텔 톤 중에서 골라 보세요. 다크 모드에서는 표시되지 않아요.</p><div class="cgrid">${sws}</div><div class="dr"><button class="btn" data-act="dlgno">닫기</button></div></div></div>`;
+  const curInt=cs.colorInt||60;
+  const intRow=(!isFav&&cur)?`<p class="ds" style="margin:10px 0 6px">농도</p><div class="rp" style="margin:0">${SECINT_STEPS.map(([v,l])=>`<button class="pill${curInt===v?' on':''}" data-act="pickcolorint" data-v="${v}">${l}</button>`).join('')}</div>`:'';
+  $('#dlg').innerHTML=`<div class="ov"><div class="dl" role="dialog" aria-modal="true" aria-labelledby="clh">${DLX}<p id="clh" class="dm">${isFav?'즐겨찾기':'섹션'} 색상</p><p class="ds">파스텔 톤 중에서 골라 보세요. 다크 모드에서는 표시되지 않아요.</p><div class="cgrid">${sws}</div>${intRow}<div class="dr"><button class="btn" data-act="dlgno">닫기</button></div></div></div>`;
 }
 
 function resetAll(){
@@ -735,7 +743,8 @@ function openCfg(){
   const rt=(v,l)=>`<label class="opt"><input type="radio" name="theme" value="${v}"${THEME===v?' checked':''}><span>${l}</span></label>`;
   const bgSw=`<button class="csw${BGCOLOR?'':' on'}" data-act="pickbg" data-c="" aria-label="기본 배경색">✕</button>`+
     PASTELS.map(c=>`<button class="csw${BGCOLOR===c?' on':''}" data-act="pickbg" data-c="${c}" style="background:${c}" aria-label="파스텔 배경색"></button>`).join('');
-  $('#dlg').innerHTML=`<div class="ov cfgov"><div class="dl cfgdl" role="dialog" aria-modal="true" aria-labelledby="cfgt"><p id="cfgt" class="dm">시작 화면 설정</p><p class="ds">앱을 다시 열 때 처음 보이는 화면을 골라요.</p>${r('last','마지막 화면')}${r('home','첫 화면')}${r('sec','섹션 지정')}<select id="ss" style="margin:8px 0 4px" aria-label="시작 섹션"${secs.length?'':' disabled'}>${opts||'<option>섹션이 없어요</option>'}</select><p class="dm" style="margin-top:16px">배경</p>${rt('system','시스템 설정 따름')}${rt('light','기본 (라이트)')}${rt('dark','다크')}<p class="ds" style="margin:6px 0 6px">배경 색상 (라이트 모드에서만 적용돼요)</p><div class="cgrid">${bgSw}</div><p class="dm" style="margin-top:16px">발음 음성</p>${S.tabs.filter(t0=>t0.audio!==false).map(t0=>{
+  const bgIntRow=BGCOLOR?`<p class="ds" style="margin:8px 0 6px">농도</p><div class="rp" style="margin:0">${BGINT_STEPS.map(([v,l])=>`<button class="pill${BGINT===v?' on':''}" data-act="pickbgint" data-v="${v}">${l}</button>`).join('')}</div>`:'';
+  $('#dlg').innerHTML=`<div class="ov cfgov"><div class="dl cfgdl" role="dialog" aria-modal="true" aria-labelledby="cfgt"><p id="cfgt" class="dm">시작 화면 설정</p><p class="ds">앱을 다시 열 때 처음 보이는 화면을 골라요.</p>${r('last','마지막 화면')}${r('home','첫 화면')}${r('sec','섹션 지정')}<select id="ss" style="margin:8px 0 4px" aria-label="시작 섹션"${secs.length?'':' disabled'}>${opts||'<option>섹션이 없어요</option>'}</select><p class="dm" style="margin-top:16px">배경</p>${rt('system','시스템 설정 따름')}${rt('light','기본 (라이트)')}${rt('dark','다크')}<p class="ds" style="margin:6px 0 6px">배경 색상 (라이트 모드에서만 적용돼요)</p><div class="cgrid">${bgSw}</div>${bgIntRow}<p class="dm" style="margin-top:16px">발음 음성</p>${S.tabs.filter(t0=>t0.audio!==false).map(t0=>{
     const has=voicesOf(t0.id).length>0;
     const hint=has?'':`<p class="ds" style="margin:2px 0 8px">${esc(t0.name)} 음성이 없어요. 안드로이드는 기기 설정 → 일반 관리(또는 시스템) → 언어 및 입력 → 텍스트 음성 변환 출력 → Google 음성 엔진 → 언어에서 해당 언어 음성 데이터를 내려받으면 나타나요.</p>`;
     return `<div class="vrow"><div class="selwrap"><select id="vo-${t0.id}" data-tab="${t0.id}" aria-label="${esc(t0.name)} 음성">${voiceOptions(t0.id)}</select></div><button class="btn ghost sm" data-act="vprev" data-l="${t0.id}" ${has?'':'disabled'}>▶ ${esc(t0.name)}</button></div>${hint}`;
@@ -987,11 +996,12 @@ function buildWordList(s){
   const showN=view.showN||PAGE_N;
   const unShown=fUn.slice(0,showN),knShown=fKn.slice(0,Math.max(0,showN-unShown.length));
   const shownTotal=unShown.length+knShown.length,filteredTotal=fUn.length+fKn.length;
+  const wTint=(s.color&&!isDarkNow())?` style="background:${secEffColor(s)};color:#1f2a37"`:'';
   const row=w=>{
     const o=view.open===w.id,chk=sel.includes(w.id);
     const box=mv?`<input type="checkbox" class="wchk" data-act="selword" data-id="${w.id}" ${chk?'checked':''} aria-label="선택">`:'';
     const icons=mv?'':`<div class="wicons"><button class="ic star${w.star?' on':''}" data-act="star" data-id="${w.id}" aria-label="${w.star?'즐겨찾기 해제':'즐겨찾기 추가'}" aria-pressed="${!!w.star}">${w.star?'★':'☆'}</button>${aud?`<button class="ic" data-act="speak" data-id="${w.id}" aria-label="발음 듣기">🔊</button>`:''}<button class="ic ck" data-act="known" data-id="${w.id}" aria-label="${w.known?'외움 취소':'외움 표시'}" aria-pressed="${!!w.known}">${w.known?'✓':'○'}</button></div>`;
-    return `<li class="w${w.known?' k':''}${o?' open':''}"><div class="wr" data-act="rowtap" data-id="${w.id}">${box}<div class="wtop"><div class="wt"><b>${esc(w.w)}</b>${w.h&&w.h!==w.w?`<span class="hg">${esc(w.h)}</span>`:''}${w.r?`<span class="rd">${esc(w.r)}</span>`:''}</div>${icons}</div><div class="wm">${esc(w.m)}</div>${w.e?`<div class="we">${esc(w.e)}</div>`:''}</div>${o&&!mv?`<div class="ra"><button class="btn ghost sm" data-act="edit" data-id="${w.id}">수정</button><button class="btn ghost sm" data-act="delw" data-id="${w.id}">삭제</button></div>`:''}</li>`};
+    return `<li class="w${w.known?' k':''}${o?' open':''}"${w.known?'':wTint}><div class="wr" data-act="rowtap" data-id="${w.id}">${box}<div class="wtop"><div class="wt"><b>${esc(w.w)}</b>${w.h&&w.h!==w.w?`<span class="hg">${esc(w.h)}</span>`:''}${w.r?`<span class="rd">${esc(w.r)}</span>`:''}</div>${icons}</div><div class="wm">${esc(w.m)}</div>${w.e?`<div class="we">${esc(w.e)}</div>`:''}</div>${o&&!mv?`<div class="ra"><button class="btn ghost sm" data-act="edit" data-id="${w.id}">수정</button><button class="btn ghost sm" data-act="delw" data-id="${w.id}">삭제</button></div>`:''}</li>`};
   const rows=unShown.map(row).join('')+(filt==='all'&&fKn.length?`<li class="sep">외운 단어 ${fKn.length}개</li>`+knShown.map(row).join(''):knShown.map(row).join(''));
   const emptyMsg=q?'검색 결과가 없어요.':filt==='kn'?'완료(외운) 단어가 아직 없어요.':filt==='un'?'안 외운 단어가 없어요. 모두 외웠어요! 🎉':'아직 단어가 없어요.<br>아래 ＋ 버튼으로 첫 단어를 추가해 보세요.';
   const moreBtn=filteredTotal>shownTotal?`<button class="wmore" data-act="showmore">더 보기 (${filteredTotal-shownTotal}개 더)</button>`:'';
@@ -1003,7 +1013,7 @@ function secView(){
   const filt=view.filter||'all';
   const filterBar=n>10?`<div class="rp wf"><button class="pill${filt==='all'?' on':''}" data-act="wfilter" data-f="all">전체 ${n}</button><button class="pill${filt==='un'?' on':''}" data-act="wfilter" data-f="un">안 외움 ${allUn.length}</button><button class="pill${filt==='kn'?' on':''}" data-act="wfilter" data-f="kn">완료 ${allKn.length}</button></div>`:'';
   const search=(n>20||view.q)?`<input id="wsearch" class="wsearch" type="search" placeholder="단어·뜻 검색" value="${esc(view.q||'')}" aria-label="단어 검색">`:'';
-  const tint=(s.color&&!isDarkNow())?` style="background:${s.color};color:#1f2a37;--sub:#667085;padding:14px 16px;border-radius:16px;margin:0 0 10px"`:'';
+  const tint=(s.color&&!isDarkNow())?` style="background:${secEffColor(s)};color:#1f2a37;--sub:#667085;padding:14px 16px;border-radius:16px;margin:0 0 10px"`:'';
   const head=view.renaming
     ?`<form class="row" data-form="rename"><input name="n" value="${esc(s.name)}" required><button class="btn">저장</button></form>`
     :`<div class="sh"${tint}><h1>${esc(s.name)}</h1>${mv?`<span class="sub">단어 선택 중</span>`:`<button class="btn ghost sm" data-act="more">설정</button>`}</div>`;
@@ -1014,12 +1024,13 @@ function secView(){
   <div id="pn" class="pl"></div>`:`
   <div class="cta"><button class="btn" data-act="study" style="grid-column:1/-1" ${allUn.length?'':'disabled'}>학습 시작 (${allUn.length})</button></div>`);
   const sel2=view.sel||[];
-  return `<button class="link" data-act="home">← ${tabName(s.lang)} 섹션</button>${head}
+  const btnScope=(s.color&&!isDarkNow())?` style="--green:color-mix(in srgb, ${secEffColor(s)} 90%, black 10%);--greenD:color-mix(in srgb, ${secEffColor(s)} 70%, black 30%)"`:'';
+  return `<div${btnScope}><button class="link" data-act="home">← ${tabName(s.lang)} 섹션</button>${head}
   <div class="prog"><span>${allKn.length} / ${n} 외움</span><span class="bar"><i style="width:${n?allKn.length/n*100:0}%"></i></span></div>${body}
   ${mv?'':filterBar}
   ${search}
   <div id="listArea">${buildWordList(s)}</div>
-  ${mv?`<div class="sel"><span>${sel2.length}개 선택</span><span class="row" style="margin:0"><button class="btn ghost sm" data-act="selall">${sel2.length&&sel2.length===s.words.length?'전체 해제':'전체 선택'}</button><button class="btn ghost sm" data-act="movecancel">취소</button>${view.moveMode==='del'?`<button class="btn warn sm" data-act="delselect" ${sel2.length?'':'disabled'}>삭제</button>`:view.moveMode==='copy'?`<button class="btn sm" data-act="copyask" ${sel2.length?'':'disabled'}>복사</button>`:`<button class="btn sm" data-act="moveask" ${sel2.length?'':'disabled'}>이동</button>`}</span></div>`:`<button class="fab" data-act="add">＋ 단어 추가</button>`}`;
+  ${mv?`<div class="sel"><span>${sel2.length}개 선택</span><span class="row" style="margin:0"><button class="btn ghost sm" data-act="selall">${sel2.length&&sel2.length===s.words.length?'전체 해제':'전체 선택'}</button><button class="btn ghost sm" data-act="movecancel">취소</button>${view.moveMode==='del'?`<button class="btn warn sm" data-act="delselect" ${sel2.length?'':'disabled'}>삭제</button>`:view.moveMode==='copy'?`<button class="btn sm" data-act="copyask" ${sel2.length?'':'disabled'}>복사</button>`:`<button class="btn sm" data-act="moveask" ${sel2.length?'':'disabled'}>이동</button>`}</span></div>`:`<button class="fab" data-act="add">＋ 단어 추가</button>`}</div>`;
 }
 
 function favView(){
@@ -1129,15 +1140,26 @@ document.addEventListener('click',e=>{
     const sid=dlg&&dlg.id;
     if(sid==='fav'){
       setFavColor(tab,b.dataset.c||'');
+      closeDlg();saveNow();render();return;
     }else{
       const cs=S.sections.find(x=>x.id===sid);
-      if(cs)cs.color=b.dataset.c||'';
+      if(cs){cs.color=b.dataset.c||'';if(cs.color&&!cs.colorInt)cs.colorInt=60;}
+      saveNow();render();openColorPicker(sid);return;
     }
-    closeDlg();saveNow();render();return;
+  }
+  else if(a==='pickcolorint'){
+    const sid=dlg&&dlg.id,cs=S.sections.find(x=>x.id===sid);
+    if(cs){cs.colorInt=Number(b.dataset.v);saveNow();render();openColorPicker(sid);}
+    return;
   }
   else if(a==='pickbg'){
     BGCOLOR=b.dataset.c||'';
     try{localStorage.setItem('vocab-bgcolor',BGCOLOR)}catch(e){}
+    applyBg();save();openCfg();return;
+  }
+  else if(a==='pickbgint'){
+    BGINT=Number(b.dataset.v);
+    try{localStorage.setItem('vocab-bgint',String(BGINT))}catch(e){}
     applyBg();save();openCfg();return;
   }
   else if(a==='edittitle'){heartBurst(b);view.titleEdit=!view.titleEdit;render();return;}
