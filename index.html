@@ -94,6 +94,9 @@ select{font:inherit;color:var(--ink);background:var(--card);border:1.5px solid v
 .statbar{max-width:640px;margin:0 auto;padding:8px 16px 0;display:flex;justify-content:flex-end;align-items:center;gap:10px;min-height:44px}
 .stat{font-size:12px;color:var(--sub)}
 .opt{display:flex;align-items:flex-start;gap:10px;padding:8px 0;font-size:16px;cursor:pointer}
+.dedrow{display:flex;align-items:flex-start;gap:8px;padding:2px 0}
+.dedrow .opt{padding:6px 0;font-size:14px}
+.dedrow .btn{flex:none;margin-top:4px}
 .opt input{width:20px;height:20px;padding:0;margin:2px 0 0;flex:none;accent-color:var(--green)}
 .opt small{display:block;color:var(--sub);font-size:13px}
 .dl select{width:100%;margin:6px 0 16px}
@@ -378,7 +381,7 @@ function targetId(last){
   if(start.mode==='sec')return S.sections.some(x=>x.id===start.sec)?start.sec:'';
   return S.sections.some(x=>x.id===last)?last:'';
 }
-const APP_VERSION='Ver.33';
+const APP_VERSION='Ver.34';
 const stat=m=>{const e=$('#stat');if(e)e.textContent=m};
 async function flush(){
   if(!ref)return;
@@ -615,13 +618,16 @@ function txImport(text){
   render();
 }
 
-let sheet=null;
-function closeSheet(){sheet=null;$('#sheet').innerHTML=''}
+let sheet=null,sheetReturn=null;
+function closeSheet(){
+  sheet=null;$('#sheet').innerHTML='';
+  if(sheetReturn){const l=sheetReturn;sheetReturn=null;buildDedupeDialog(l);}
+}
 $('#sheet').addEventListener('click',e=>{if(e.target.dataset&&e.target.dataset.close)closeSheet()});
 function openSheet(mode,w,secOverride){
   const s=secOverride||sec();if(!s)return;
   const edit=mode==='edit',val=k=>edit?esc(w[k]||''):'';
-  sheet={mode,id:w&&w.id};
+  sheet={mode,id:w&&w.id,secId:s.id};
   const bulk=edit?'':`<form data-form="bulk" data-pane="many" hidden><textarea name="t" rows="6" placeholder="한 줄에 하나씩 단어(, 발음, 뜻) — 단어만 적어도 돼요&#10;${esc(s.name)} 예시 단어, 발음, 뜻" required></textarea><div class="row"><button class="btn">붙여넣은 단어 추가</button></div></form>`;
   $('#sheet').innerHTML=`<div class="sov"><div class="sh2" role="dialog" aria-modal="true" aria-label="${edit?'단어 수정':'단어 추가'}"><div class="grab"></div>
   <div class="sht"><b>${edit?'단어 수정':'단어 추가'}</b>${edit?'':'<div class="seg"><button type="button" data-act="pane" data-p="one" class="on">한 개</button><button type="button" data-act="pane" data-p="many">여러 개</button></div>'}<button class="ic" data-act="sclose" aria-label="닫기">×</button></div>
@@ -691,6 +697,24 @@ function openColorPicker(sid){
   const sws=`<button class="csw${cur?'':' on'}" data-act="pickcolor" data-c="" aria-label="기본 색상">✕</button>`+
     PASTELS.map(c=>`<button class="csw${cur===c?' on':''}" data-act="pickcolor" data-c="${c}" style="background:${c}" aria-label="파스텔 색상"></button>`).join('');
   $('#dlg').innerHTML=`<div class="ov"><div class="dl" role="dialog" aria-modal="true" aria-labelledby="clh">${DLX}<p id="clh" class="dm">${isFav?'즐겨찾기':'섹션'} 색상</p><p class="ds">파스텔 톤 중에서 골라 보세요. 다크 모드에서는 표시되지 않아요.</p><div class="cgrid">${sws}</div><div class="dr"><button class="btn" data-act="dlgno">닫기</button></div></div></div>`;
+}
+function buildDedupeDialog(langId){
+  const secs=S.sections.filter(x=>(x.lang||'en')===langId);
+  const groups=new Map();
+  secs.forEach(s0=>s0.words.forEach(w=>{
+    const key=w.w+'␟'+w.m;
+    if(!groups.has(key))groups.set(key,[]);
+    groups.get(key).push({id:w.id,secId:s0.id,secName:s0.name,w:w.w,m:w.m,r:w.r,e:w.e});
+  }));
+  const dupGroups=[...groups.values()].filter(g=>g.length>1);
+  if(!dupGroups.length){
+    dlg={k:'info'};
+    $('#dlg').innerHTML=`<div class="ov"><div class="dl" role="dialog" aria-modal="true"><p class="dm">중복 단어가 없어요</p><div class="dr"><button class="btn" data-act="dlgno">닫기</button></div></div></div>`;
+    return;
+  }
+  dlg={k:'dedupe',lang:langId};
+  const item=(it,i)=>`<div class="dedrow"><label class="opt" style="flex:1;min-width:0"><input type="checkbox" data-dedid="${it.id}"${i===0?'':' checked'}><span style="min-width:0"><b>${esc(it.secName)}</b>${it.r?` · ${esc(it.r)}`:''}${it.e?`<br><span class="ds" style="margin:0;font-size:12px">${esc(it.e)}</span>`:''}</span></label><button class="btn ghost sm" data-act="dedupeedit" data-id="${it.id}" data-sec="${it.secId}">수정</button></div>`;
+  $('#dlg').innerHTML=`<div class="ov"><div class="dl" role="dialog" aria-modal="true" aria-labelledby="dpht" style="max-width:400px">${DLX}<p id="dpht" class="dm">중복 단어 정리</p><p class="ds">${esc(tabName(langId))}의 모든 섹션에서 단어와 뜻이 같은 항목이 ${dupGroups.length}그룹 있어요. 지울 항목에 체크가 돼 있어요 — 내용을 보고 남길 항목은 체크를 해제하거나, 수정을 눌러 고칠 수 있어요.</p>${dupGroups.map(g=>`<p class="ds" style="margin:12px 0 4px;font-weight:700;color:var(--ink)">${esc(g[0].w)} · ${esc(g[0].m)}</p>${g.map(item).join('')}`).join('')}<div class="dr"><button class="btn ghost" data-act="dlgno">취소</button><button class="btn warn" data-act="dedupeok">선택 삭제</button></div></div></div>`;
 }
 
 function resetAll(){
@@ -1223,22 +1247,7 @@ document.addEventListener('click',e=>{
   else if(a==='dedupe'){
     closeDlg();
     const cs=sec();if(!cs)return;
-    const langId=cs.lang||'en';
-    const secs=S.sections.filter(x=>(x.lang||'en')===langId);
-    const groups=new Map();
-    secs.forEach(s0=>s0.words.forEach(w=>{
-      const key=w.w+'\u241F'+w.m;
-      if(!groups.has(key))groups.set(key,[]);
-      groups.get(key).push({id:w.id,w:w.w,m:w.m,secName:s0.name});
-    }));
-    const dupGroups=[...groups.values()].filter(g=>g.length>1);
-    if(!dupGroups.length){
-      dlg={k:'info'};
-      $('#dlg').innerHTML=`<div class="ov"><div class="dl" role="dialog" aria-modal="true"><p class="dm">중복 단어가 없어요</p><div class="dr"><button class="btn" data-act="dlgno">닫기</button></div></div></div>`;
-      return;
-    }
-    dlg={k:'dedupe',lang:langId};
-    $('#dlg').innerHTML=`<div class="ov"><div class="dl" role="dialog" aria-modal="true" aria-labelledby="dpht" style="max-width:380px">${DLX}<p id="dpht" class="dm">중복 단어 정리</p><p class="ds">${esc(tabName(langId))}의 모든 섹션에서 단어와 뜻이 같은 항목이 ${dupGroups.length}그룹 있어요. 지울 항목에 체크가 돼 있어요 — 남기려면 체크를 해제하세요.</p>${dupGroups.map(g=>`<p class="ds" style="margin:12px 0 2px;font-weight:700;color:var(--ink)">${esc(g[0].w)} · ${esc(g[0].m)}</p>${g.map((it,i)=>`<label class="opt"><input type="checkbox" data-dedid="${it.id}"${i===0?'':' checked'}><span>${esc(it.secName)}</span></label>`).join('')}`).join('')}<div class="dr"><button class="btn ghost" data-act="dlgno">취소</button><button class="btn warn" data-act="dedupeok">선택 삭제</button></div></div></div>`;
+    buildDedupeDialog(cs.lang||'en');
     return;
   }
   else if(a==='dedupeok'){
@@ -1359,6 +1368,14 @@ document.addEventListener('click',e=>{
   else if(a==='playstop'){stopPlay();return;}
   else if(a==='rep'){rep=Number(b.dataset.n);try{localStorage.setItem('vocab-rep',String(rep))}catch(e){}save();}
   else if(a==='edit'){const w=s&&s.words.find(x=>x.id===id);if(w)openSheet('edit',w,s);return;}
+  else if(a==='dedupeedit'){
+    const s0=S.sections.find(x=>x.id===secId),w=s0&&s0.words.find(x=>x.id===id);
+    if(!w||!s0)return;
+    sheetReturn=dlg&&dlg.lang;
+    closeDlg();
+    openSheet('edit',w,s0);
+    return;
+  }
   else if(a==='canceledit'){view.editing=null;}
   else if(a==='speak'){const w=id?s.words.find(x=>x.id===id):study.deck[study.i];if(w)speak(w.w,s.lang);return;}
   else if(a==='known'){const w=s.words.find(x=>x.id===id);w.known=!w.known;save();}
@@ -1415,7 +1432,7 @@ document.addEventListener('submit',async e=>{
   }
   else if(t==='editw'){
     const v={w:d.get('w').trim(),r:(d.get('r')||'').trim(),m:d.get('m').trim(),e:(d.get('e')||'').trim(),h:(d.get('h')||'').trim()};
-    const cs=sec(),w=cs&&cs.words.find(x=>x.id===f.dataset.id);
+    const cs=S.sections.find(x=>x.id===(sheet&&sheet.secId))||sec(),w=cs&&cs.words.find(x=>x.id===f.dataset.id);
     if(!w)return;
     w.w=v.w;w.r=v.r;w.m=v.m;w.e=v.e;w.h=v.h;save();
     closeSheet();
