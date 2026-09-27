@@ -331,9 +331,9 @@ function isDarkNow(){
 try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{applyBg();if(THEME==='system')render()})}catch(e){}
 let BGCOLOR='';
 try{BGCOLOR=localStorage.getItem('vocab-bgcolor')||''}catch(e){}
-let BGINT=100;
-try{BGINT=Number(localStorage.getItem('vocab-bgint'))||100}catch(e){}
-const BGINT_STEPS=[[40,'연하게'],[70,'보통'],[100,'진하게']];
+let BGINT=60;
+try{BGINT=Number(localStorage.getItem('vocab-bgint'))||60}catch(e){}
+const BGINT_STEPS=[[10,0,'연하게'],[30,10,'보통'],[60,20,'진하게']];
 function parseColor(c){
   c=(c||'').trim();
   if(c[0]==='#'){
@@ -354,7 +354,8 @@ function applyBg(){
   try{
     const root=document.documentElement;
     if(BGCOLOR&&!isDarkNow()){
-      const cardPct=Math.round(BGINT*0.3);
+      const step=BGINT_STEPS.find(x=>x[0]===BGINT);
+      const cardPct=step?step[1]:Math.round(BGINT*0.3);
       root.style.setProperty('--bg',mixColor(BGCOLOR,BGINT,'#ffffff'));
       root.style.setProperty('--card',mixColor(BGCOLOR,cardPct,'#ffffff'));
     }else{
@@ -749,7 +750,7 @@ function openCfg(){
   const rt=(v,l)=>`<label class="opt"><input type="radio" name="theme" value="${v}"${THEME===v?' checked':''}><span>${l}</span></label>`;
   const bgSw=`<button class="csw${BGCOLOR?'':' on'}" data-act="pickbg" data-c="" aria-label="기본 배경색">✕</button>`+
     PASTELS.map(c=>`<button class="csw${BGCOLOR===c?' on':''}" data-act="pickbg" data-c="${c}" style="background:${c}" aria-label="파스텔 배경색"></button>`).join('');
-  const bgIntRow=BGCOLOR?`<p class="ds" style="margin:8px 0 6px">농도</p><div class="rp" style="margin:0">${BGINT_STEPS.map(([v,l])=>`<button class="pill${BGINT===v?' on':''}" data-act="pickbgint" data-v="${v}">${l}</button>`).join('')}</div>`:'';
+  const bgIntRow=BGCOLOR?`<p class="ds" style="margin:8px 0 6px">농도</p><div class="rp" style="margin:0">${BGINT_STEPS.map(([v,,l])=>`<button class="pill${BGINT===v?' on':''}" data-act="pickbgint" data-v="${v}">${l}</button>`).join('')}</div>`:'';
   $('#dlg').innerHTML=`<div class="ov cfgov"><div class="dl cfgdl" role="dialog" aria-modal="true" aria-labelledby="cfgt"><p id="cfgt" class="dm">시작 화면 설정</p><p class="ds">앱을 다시 열 때 처음 보이는 화면을 골라요.</p>${r('last','마지막 화면')}${r('home','첫 화면')}${r('sec','섹션 지정')}<select id="ss" style="margin:8px 0 4px" aria-label="시작 섹션"${secs.length?'':' disabled'}>${opts||'<option>섹션이 없어요</option>'}</select><p class="dm" style="margin-top:16px">배경</p>${rt('system','시스템 설정 따름')}${rt('light','기본 (라이트)')}${rt('dark','다크')}<p class="ds" style="margin:6px 0 6px">배경 색상 (라이트 모드에서만 적용돼요)</p><div class="cgrid">${bgSw}</div>${bgIntRow}<p class="dm" style="margin-top:16px">발음 음성</p>${S.tabs.filter(t0=>t0.audio!==false).map(t0=>{
     const has=voicesOf(t0.id).length>0;
     const hint=has?'':`<p class="ds" style="margin:2px 0 8px">${esc(t0.name)} 음성이 없어요. 안드로이드는 기기 설정 → 일반 관리(또는 시스템) → 언어 및 입력 → 텍스트 음성 변환 출력 → Google 음성 엔진 → 언어에서 해당 언어 음성 데이터를 내려받으면 나타나요.</p>`;
