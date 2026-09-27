@@ -381,7 +381,7 @@ function targetId(last){
   if(start.mode==='sec')return S.sections.some(x=>x.id===start.sec)?start.sec:'';
   return S.sections.some(x=>x.id===last)?last:'';
 }
-const APP_VERSION='Ver.35';
+const APP_VERSION='Ver.36';
 const stat=m=>{const e=$('#stat');if(e)e.textContent=m};
 async function flush(){
   if(!ref)return;
@@ -621,7 +621,15 @@ function txImport(text){
 let sheet=null,sheetReturn=null;
 function closeSheet(){
   sheet=null;$('#sheet').innerHTML='';
-  if(sheetReturn){const l=sheetReturn;sheetReturn=null;buildDedupeDialog(l);}
+  if(sheetReturn){
+    const r=sheetReturn;sheetReturn=null;
+    buildDedupeDialog(r.lang);
+    const dl1=$('#dlg .dl');
+    if(dl1){
+      [...dl1.querySelectorAll('input[data-dedid]')].forEach(b=>{if(r.checked.has(b.dataset.dedid))b.checked=r.checked.get(b.dataset.dedid)});
+      dl1.scrollTop=r.scrollTop;
+    }
+  }
 }
 $('#sheet').addEventListener('click',e=>{if(e.target.dataset&&e.target.dataset.close)closeSheet()});
 function openSheet(mode,w,secOverride){
@@ -1371,7 +1379,12 @@ document.addEventListener('click',e=>{
   else if(a==='dedupeedit'){
     const s0=S.sections.find(x=>x.id===secId),w=s0&&s0.words.find(x=>x.id===id);
     if(!w||!s0)return;
-    sheetReturn=dlg&&dlg.lang;
+    const dl0=$('#dlg .dl');
+    sheetReturn=dlg&&{
+      lang:dlg.lang,
+      scrollTop:dl0?dl0.scrollTop:0,
+      checked:new Map([...document.querySelectorAll('#dlg input[data-dedid]')].map(b=>[b.dataset.dedid,b.checked]))
+    };
     closeDlg();
     openSheet('edit',w,s0);
     return;
