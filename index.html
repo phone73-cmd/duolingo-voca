@@ -125,6 +125,10 @@ h1{font-size:32px}
 .wicons{display:flex;gap:6px;flex:none}
 .wm{font-size:16px;margin-top:6px}
 .we{font-size:14px;color:var(--sub);margin-top:2px}
+.srchpath{font-size:12px;color:var(--sub);margin-top:4px}
+.logohit{background:none;border:0;padding:0;margin:0;cursor:pointer;display:inline-flex;line-height:0;flex:none}
+.heart{position:fixed;pointer-events:none;font-size:16px;z-index:40;will-change:transform,opacity;animation:heartBurst .9s ease-out forwards}
+@keyframes heartBurst{0%{opacity:1;transform:translate(-50%,-50%) translate(0,0) scale(.5) rotate(var(--hr,0deg))}100%{opacity:0;transform:translate(-50%,-50%) translate(var(--hx,0px),-70px) scale(1.3) rotate(var(--hr,0deg))}}
 .ic{width:38px;height:38px;border:0;background:var(--bg)}
 .ra{display:flex;gap:8px;padding-top:10px}
 .btn.sm{padding:7px 14px;font-size:14px;border-bottom-width:2px}
@@ -485,7 +489,7 @@ function home(){
     :`<button class="addcard" data-act="newsec">＋ 새 섹션</button>`;
   const titleHead=view.titleEdit
     ?`<form class="row" data-form="renametitle"><input name="n" value="${esc(getTitle())}" maxlength="30" required><button class="btn">저장</button></form>`
-    :`<div class="sh"><span style="display:flex;align-items:center;gap:8px;min-width:0"><img src="${APP_ICON}" alt="" style="height:36px;width:auto;flex:none"><h1 style="margin:0">${esc(getTitle())}</h1></span><button class="ic" data-act="edittitle" aria-label="단어장 이름 변경" style="width:44px;height:44px;font-size:22px">✎</button></div>`;
+    :`<div class="sh"><span style="display:flex;align-items:center;gap:8px;min-width:0"><button class="logohit" data-act="edittitle" aria-label="단어장 이름 변경"><img src="${APP_ICON}" alt="" style="height:36px;width:auto"></button><h1 style="margin:0">${esc(getTitle())}</h1></span><button class="ic" data-act="opensearch" aria-label="단어 검색" style="width:44px;height:44px;font-size:20px">🔍</button></div>`;
   return `${titleHead}
   <div class="tabs" role="tablist">${tabs}</div>
   ${cards?favCard:''}
@@ -967,7 +971,7 @@ function secView(){
   const allUn=s.words.filter(w=>!w.known),allKn=s.words.filter(w=>w.known);
   const filt=view.filter||'all';
   const filterBar=n>10?`<div class="rp wf"><button class="pill${filt==='all'?' on':''}" data-act="wfilter" data-f="all">전체 ${n}</button><button class="pill${filt==='un'?' on':''}" data-act="wfilter" data-f="un">안 외움 ${allUn.length}</button><button class="pill${filt==='kn'?' on':''}" data-act="wfilter" data-f="kn">완료 ${allKn.length}</button></div>`:'';
-  const search=n>20?`<input id="wsearch" class="wsearch" type="search" placeholder="단어·뜻 검색" value="${esc(view.q||'')}" aria-label="단어 검색">`:'';
+  const search=(n>20||view.q)?`<input id="wsearch" class="wsearch" type="search" placeholder="단어·뜻 검색" value="${esc(view.q||'')}" aria-label="단어 검색">`:'';
   const tint=(s.color&&!isDarkNow())?` style="background:${s.color};color:#1f2a37;--sub:#667085;padding:14px 16px;border-radius:16px;margin:0 0 10px"`:'';
   const head=view.renaming
     ?`<form class="row" data-form="rename"><input name="n" value="${esc(s.name)}" required><button class="btn">저장</button></form>`
@@ -1032,7 +1036,51 @@ function render(){
   const cur=view.name==='home'?'':(view.id||'');
   if(cur!==lastId){lastId=cur;try{localStorage.setItem('vocab-last',cur)}catch(e){}save()}
   try{document.title=getTitle()}catch(e){}
-  $('#app').innerHTML=view.name==='home'?home():view.name==='sec'?secView():view.name==='fav'?favView():studyView();
+  $('#app').innerHTML=view.name==='home'?home():view.name==='sec'?secView():view.name==='fav'?favView():view.name==='search'?searchView():studyView();
+}
+function heartBurst(el){
+  try{
+    if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+    const r=el.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;
+    for(let i=0;i<6;i++){
+      const h=document.createElement('span');
+      h.className='heart';h.textContent='💗';
+      h.style.left=cx+'px';h.style.top=cy+'px';
+      h.style.setProperty('--hx',Math.round((Math.random()-.5)*70)+'px');
+      h.style.setProperty('--hr',Math.round((Math.random()-.5)*40)+'deg');
+      h.style.animationDelay=Math.round(Math.random()*120)+'ms';
+      document.body.appendChild(h);
+      h.addEventListener('animationend',()=>h.remove());
+      setTimeout(()=>{if(h.isConnected)h.remove()},1500);
+    }
+  }catch(e){}
+}
+function searchResultsHTML(){
+  const q=(view.q||'').trim().toLowerCase();
+  const results=[];
+  if(q){
+    S.sections.forEach(sec0=>{
+      sec0.words.forEach(w=>{
+        if(w.w.toLowerCase().includes(q)||w.m.toLowerCase().includes(q)||(w.r||'').toLowerCase().includes(q))results.push({w,sec0});
+      });
+    });
+  }
+  const showN=view.showN||PAGE_N;
+  const shown=results.slice(0,showN);
+  const row=({w,sec0})=>{
+    const aud=tabAudio(sec0.lang);
+    return `<li class="w"><div class="wr" data-act="srchopen" data-id="${w.id}" data-sec="${sec0.id}"><div class="wtop"><div class="wt"><b>${esc(w.w)}</b>${w.r?`<span class="rd">${esc(w.r)}</span>`:''}</div><div class="wicons"><button class="ic star${w.star?' on':''}" data-act="star" data-id="${w.id}" data-sec="${sec0.id}" aria-label="${w.star?'즐겨찾기 해제':'즐겨찾기 추가'}" aria-pressed="${!!w.star}">${w.star?'★':'☆'}</button>${aud?`<button class="ic" data-act="speak" data-id="${w.id}" data-sec="${sec0.id}" aria-label="발음 듣기">🔊</button>`:''}</div></div><div class="wm">${esc(w.m)}</div><div class="srchpath">${esc(tabName(sec0.lang))} · ${esc(sec0.name)}</div></div></li>`;
+  };
+  const rows=shown.map(row).join('');
+  const moreBtn=results.length>shown.length?`<button class="wmore" data-act="showmore">더 보기 (${results.length-shown.length}개 더)</button>`:'';
+  const empty=!q?'단어나 뜻을 입력해서 전체 단어장을 검색해요.':(results.length?'':'검색 결과가 없어요.');
+  return `<ul class="list">${rows||`<li class="empty">${empty}</li>`}</ul>${moreBtn}`;
+}
+function searchView(){
+  return `<button class="link" data-act="home">← 홈으로</button>
+  <div class="sh"><h1>🔍 단어 검색</h1></div>
+  <input id="gsearch" class="wsearch" type="search" placeholder="모든 섹션에서 단어·뜻 검색" value="${esc(view.q||'')}" aria-label="전체 단어 검색">
+  <div id="searchResults">${searchResultsHTML()}</div>`;
 }
 
 document.addEventListener('click',e=>{
@@ -1056,7 +1104,21 @@ document.addEventListener('click',e=>{
     }
     closeDlg();saveNow();render();return;
   }
-  else if(a==='edittitle'){view.titleEdit=!view.titleEdit;render();return;}
+  else if(a==='edittitle'){heartBurst(b);view.titleEdit=!view.titleEdit;render();return;}
+  else if(a==='opensearch'){view={name:'search',q:''};render();requestAnimationFrame(()=>{const i=$('#gsearch');if(i)i.focus()});return;}
+  else if(a==='srchopen'){
+    if(!s)return;
+    tab=s.lang||'en';
+    const w=s.words.find(x=>x.id===id);
+    view={name:'sec',id:s.id,q:w?w.w:''};
+    render();
+    requestAnimationFrame(()=>{
+      const rowEl=document.querySelector(`.wr[data-id="${CSS.escape(id)}"]`);
+      const li=rowEl&&rowEl.closest('.w');
+      if(li){li.classList.add('now');li.scrollIntoView({block:'center',behavior:'smooth'});setTimeout(()=>li.classList.remove('now'),1600)}
+    });
+    return;
+  }
   else if(a==='dels'){askDel({k:'s',id:s.id},'‘'+esc(s.name)+'’ 섹션을 삭제할까요?','단어 '+s.words.length+'개도 함께 삭제되고, 되돌릴 수 없어요.');return;}
   else if(a==='reordersec'){view.reorderSec=!view.reorderSec;render();return;}
   else if(a==='secup'||a==='secdown'){
@@ -1243,6 +1305,16 @@ document.addEventListener('input',e=>{
       view.q=t.value;view.showN=PAGE_N;
       const box=document.getElementById('listArea');
       if(box&&view.name==='sec')box.innerHTML=buildWordList(sec());
+    },150);
+    return;
+  }
+  if(e.target.id==='gsearch'){
+    clearTimeout(wsTimer);
+    const t=e.target;
+    wsTimer=setTimeout(()=>{
+      view.q=t.value;view.showN=PAGE_N;
+      const box=document.getElementById('searchResults');
+      if(box&&view.name==='search')box.innerHTML=searchResultsHTML();
     },150);
     return;
   }
