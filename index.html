@@ -378,7 +378,7 @@ function targetId(last){
   if(start.mode==='sec')return S.sections.some(x=>x.id===start.sec)?start.sec:'';
   return S.sections.some(x=>x.id===last)?last:'';
 }
-const APP_VERSION='Ver.32';
+const APP_VERSION='Ver.33';
 const stat=m=>{const e=$('#stat');if(e)e.textContent=m};
 async function flush(){
   if(!ref)return;
@@ -1223,26 +1223,43 @@ document.addEventListener('click',e=>{
   else if(a==='dedupe'){
     closeDlg();
     const cs=sec();if(!cs)return;
-    const seen=new Map(),dupIds=[];
-    cs.words.forEach(w=>{
+    const langId=cs.lang||'en';
+    const secs=S.sections.filter(x=>(x.lang||'en')===langId);
+    const groups=new Map();
+    secs.forEach(s0=>s0.words.forEach(w=>{
       const key=w.w+'\u241F'+w.m;
-      if(seen.has(key)){dupIds.push(w.id);if(w.known)seen.get(key).known=true}
-      else seen.set(key,w);
-    });
-    if(!dupIds.length){
+      if(!groups.has(key))groups.set(key,[]);
+      groups.get(key).push({id:w.id,w:w.w,m:w.m,secName:s0.name});
+    }));
+    const dupGroups=[...groups.values()].filter(g=>g.length>1);
+    if(!dupGroups.length){
       dlg={k:'info'};
       $('#dlg').innerHTML=`<div class="ov"><div class="dl" role="dialog" aria-modal="true"><p class="dm">중복 단어가 없어요</p><div class="dr"><button class="btn" data-act="dlgno">닫기</button></div></div></div>`;
       return;
     }
-    dlg={k:'dedupe',ids:dupIds};
-    $('#dlg').innerHTML=`<div class="ov"><div class="dl" role="alertdialog" aria-modal="true"><p class="dm">중복 단어 ${dupIds.length}개를 지울까요?</p><p class="ds">단어와 뜻이 모두 같은 항목 중 먼저 추가된 것만 남겨요.</p><div class="dr"><button class="btn ghost" id="dlno" data-act="dlgno">취소</button><button class="btn warn" data-act="dedupeok">지우기</button></div></div></div>`;
+    dlg={k:'dedupe',lang:langId};
+    $('#dlg').innerHTML=`<div class="ov"><div class="dl" role="dialog" aria-modal="true" aria-labelledby="dpht" style="max-width:380px">${DLX}<p id="dpht" class="dm">중복 단어 정리</p><p class="ds">${esc(tabName(langId))}의 모든 섹션에서 단어와 뜻이 같은 항목이 ${dupGroups.length}그룹 있어요. 지울 항목에 체크가 돼 있어요 — 남기려면 체크를 해제하세요.</p>${dupGroups.map(g=>`<p class="ds" style="margin:12px 0 2px;font-weight:700;color:var(--ink)">${esc(g[0].w)} · ${esc(g[0].m)}</p>${g.map((it,i)=>`<label class="opt"><input type="checkbox" data-dedid="${it.id}"${i===0?'':' checked'}><span>${esc(it.secName)}</span></label>`).join('')}`).join('')}<div class="dr"><button class="btn ghost" data-act="dlgno">취소</button><button class="btn warn" data-act="dedupeok">선택 삭제</button></div></div></div>`;
     return;
   }
   else if(a==='dedupeok'){
-    const cs=sec(),ids=(dlg&&dlg.ids)||[];
+    const langId=dlg&&dlg.lang;
+    const delSet=new Set([...document.querySelectorAll('#dlg input[data-dedid]:checked')].map(b=>b.dataset.dedid));
     closeDlg();
-    if(!cs||!ids.length)return;
-    cs.words=cs.words.filter(w=>!ids.includes(w.id));
+    if(!langId||!delSet.size)return;
+    const secs=S.sections.filter(x=>(x.lang||'en')===langId);
+    const groups=new Map();
+    secs.forEach(s0=>s0.words.forEach(w=>{
+      const key=w.w+'\u241F'+w.m;
+      if(!groups.has(key))groups.set(key,[]);
+      groups.get(key).push(w);
+    }));
+    groups.forEach(g=>{
+      if(g.some(w=>delSet.has(w.id)&&w.known)){
+        const keep=g.find(w=>!delSet.has(w.id));
+        if(keep)keep.known=true;
+      }
+    });
+    secs.forEach(s0=>{s0.words=s0.words.filter(w=>!delSet.has(w.id))});
     save();render();
     return;
   }
