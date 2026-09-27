@@ -246,7 +246,7 @@ h1{font-size:32px}
 </style>
 </head>
 <body>
-<div class="statbar"><div id="stat" class="stat"></div><button class="ic" data-act="cfg" aria-label="설정">⚙</button></div>
+<div class="statbar"><div id="stat" class="stat"></div><button class="ic" data-act="cfg" aria-label="설정" style="width:44px;height:44px;font-size:20px">⚙</button></div>
 <div id="app"></div>
 <div id="dlg"></div>
 <button id="totop" class="totop" aria-label="맨 위로" title="맨 위로">↑</button>
@@ -375,6 +375,7 @@ function targetId(last){
   if(start.mode==='sec')return S.sections.some(x=>x.id===start.sec)?start.sec:'';
   return S.sections.some(x=>x.id===last)?last:'';
 }
+const APP_VERSION='V1.9';
 const stat=m=>{const e=$('#stat');if(e)e.textContent=m};
 async function flush(){
   if(!ref)return;
@@ -493,10 +494,10 @@ function onDoc(snap){
   try{
     const [db,user]=await Promise.all([window.claude.use('db'),window.claude.use('user')]);
     const uid=user?await user.id():null;
-    if(!db||!uid){stat('이 기기에만 저장돼요');return}
+    if(!db||!uid){stat(APP_VERSION);return}
     ref=db.doc('data/users/'+uid+'/vocab');
     ref.onSnapshot(onDoc,()=>stat('동기화 오류 · 이 기기에는 저장됨'));
-  }catch(e){stat('이 기기에만 저장돼요')}
+  }catch(e){stat(APP_VERSION)}
 })();
 let view={name:'home'},study=null;
 
