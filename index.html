@@ -232,7 +232,7 @@ h1{font-size:32px}
 .cfgdl .vrow.two .selwrap{height:40px}
 .cfgdl .opt:has(#vo-rm){border:1px dashed var(--line);background:transparent;margin:8px 0 3px}
 .cfgdl .ds[style*="margin-bottom:4px"]{margin:0 0 7px!important;padding:8px 10px;border-radius:12px;background:var(--tint);font-size:12px}
-.cfgdl .dr{position:sticky;bottom:0;z-index:3;margin:16px -18px -14px;padding:12px 18px calc(12px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);background:var(--card);justify-content:stretch}
+.cfgdl .dr{position:sticky;bottom:-15px;z-index:3;margin:16px -18px -14px;padding:12px 18px calc(12px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);background:var(--card);justify-content:stretch}
 .cfgdl .dr .btn{flex:1 1 0;min-width:0;padding:10px 8px;border-radius:12px;font-size:13px}
 @media (max-width:520px){
   .cfgov{padding:8px;align-items:flex-end}
@@ -375,7 +375,7 @@ function targetId(last){
   if(start.mode==='sec')return S.sections.some(x=>x.id===start.sec)?start.sec:'';
   return S.sections.some(x=>x.id===last)?last:'';
 }
-const APP_VERSION='Ver.25';
+const APP_VERSION='Ver.26';
 const stat=m=>{const e=$('#stat');if(e)e.textContent=m};
 async function flush(){
   if(!ref)return;
