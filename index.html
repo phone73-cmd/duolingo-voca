@@ -381,7 +381,7 @@ function targetId(last){
   if(start.mode==='sec')return S.sections.some(x=>x.id===start.sec)?start.sec:'';
   return S.sections.some(x=>x.id===last)?last:'';
 }
-const APP_VERSION='Ver.39';
+const APP_VERSION='Ver.40';
 const stat=m=>{const e=$('#stat');if(e)e.textContent=m};
 async function flush(){
   if(!ref)return;
@@ -925,6 +925,12 @@ function stopPlay(){if(player){player.stop=true;if(player.resume)player.resume()
 let rep=1,wl=null;
 try{const r=localStorage.getItem('vocab-rep');if(r!==null&&[0,1,3].includes(Number(r)))rep=Number(r)}catch(e){}
 const pnote=(m,html)=>{const e=$('#pn');if(e){if(html)e.innerHTML=m;else e.textContent=m}};
+let playLog=[];
+function pdiag(word,r,note){
+  playLog.push(`${word}:${r.ok?'ok':'ERR('+r.err+')'}${note?' '+note:''}`);
+  if(playLog.length>8)playLog=playLog.slice(-8);
+  const e=$('#pdiag');if(e)e.textContent='재생 로그: '+playLog.join(' | ');
+}
 async function keepAwake(on){
   try{
     if(on){if(!navigator.wakeLock)return false;if(!wl){wl=await navigator.wakeLock.request('screen');wl.addEventListener('release',()=>{wl=null})}return true}
@@ -951,6 +957,7 @@ function jumpPlay(id){
   if(tk.resume)tk.resume();
 }
 async function playAll(){
+  playLog=[];
   const isFav=view.name==='fav',sid=isFav?null:view.id,curTab=tab,tok={stop:false};player=tok;setPlayUI('');
   const cur=()=>{
     if(isFav){
@@ -992,6 +999,7 @@ async function playAll(){
     const label=(rep===1?'':round+(rep>1?'/'+rep:'')+'회차 · ')+(k+1)+' / '+ids.length;
     setPlayUI('재생 중 '+label);
     let r=await speakP(w.w,lang);
+    pdiag(w.w,r,(!r.ok&&soft(r.err)&&!tok.pauseReq&&!tok.jumpTo)?'⚠소프트오류-재시도안함':'');
     if(tok.stop)return;
     if(tok.pauseReq){if(!(await hold('일시정지 · '+label)))return;continue}
     if(tok.jumpTo)continue;
@@ -999,7 +1007,7 @@ async function playAll(){
       try{speechSynthesis.cancel()}catch(e){}
       await sleep(400);if(tok.stop)return;
       if(tok.pauseReq||tok.jumpTo)continue;
-      r=await speakP(w.w,lang);if(tok.stop)return;
+      r=await speakP(w.w,lang);pdiag(w.w,r,'(재시도)');if(tok.stop)return;
       if(tok.pauseReq||tok.jumpTo)continue;
       if(!r.ok&&!soft(r.err)){
         tok.stalled=true;setPlayUI('소리가 나오지 않아 멈췄어요');
@@ -1065,7 +1073,8 @@ function secView(){
   <div class="cta">${player?`<button class="btn" data-act="playstop">⏹ 그만 듣기</button>`:`<button class="btn" data-act="study" ${allUn.length?'':'disabled'}>학습 시작 (${allUn.length})</button>`}<button class="btn ghost" id="plbtn" data-act="play" ${n?'':'disabled'}>${player?((player.stalled||player.paused)?'▶ 이어 듣기':'⏹ 정지'):'▶ 전체 재생'}</button></div>
   <div class="rp"><span>반복</span>${[[1,'1번'],[3,'3번'],[0,'무한']].map(x=>`<button class="pill${rep===x[0]?' on':''}" data-act="rep" data-n="${x[0]}">${x[1]}</button>`).join('')}</div>
   <div id="pl" class="pl" aria-live="polite"></div>
-  <div id="pn" class="pl"></div>`:`
+  <div id="pn" class="pl"></div>
+  <div id="pdiag" class="ds" style="font-size:11px;line-height:1.5;word-break:break-all;color:#c00;background:#fffbe6;padding:4px 6px;border-radius:6px;margin:6px 0 0">${playLog.length?'재생 로그: '+playLog.join(' | '):''}</div>`:`
   <div class="cta"><button class="btn" data-act="study" style="grid-column:1/-1" ${allUn.length?'':'disabled'}>학습 시작 (${allUn.length})</button></div>`);
   const sel2=view.sel||[];
   return `<button class="link" data-act="home">← ${tabName(s.lang)} 섹션</button>${head}
@@ -1094,7 +1103,8 @@ function favView(){
   <div class="cta">${player?`<button class="btn" data-act="playstop">⏹ 그만 듣기</button><button class="btn ghost" id="plbtn" data-act="play">${(player.stalled||player.paused)?'▶ 이어 듣기':'⏹ 정지'}</button>`:`<button class="btn ghost" id="plbtn" data-act="play" style="grid-column:1/-1" ${items.length?'':'disabled'}>▶ 전체 재생</button>`}</div>
   <div class="rp"><span>반복</span>${[[1,'1번'],[3,'3번'],[0,'무한']].map(x=>`<button class="pill${rep===x[0]?' on':''}" data-act="rep" data-n="${x[0]}">${x[1]}</button>`).join('')}</div>
   <div id="pl" class="pl" aria-live="polite"></div>
-  <div id="pn" class="pl"></div>`:'';
+  <div id="pn" class="pl"></div>
+  <div id="pdiag" class="ds" style="font-size:11px;line-height:1.5;word-break:break-all;color:#c00;background:#fffbe6;padding:4px 6px;border-radius:6px;margin:6px 0 0">${playLog.length?'재생 로그: '+playLog.join(' | '):''}</div>`:'';
   return `<button class="link" data-act="home">← ${tabName(lang)} 섹션</button>
   <div class="sh"${favTint}><h1>⭐ 즐겨찾기</h1><button class="ic" data-act="favcolor" aria-label="즐겨찾기 색상 변경">⋯</button></div>${body}
   <ul class="list">${rows||'<li class="empty">즐겨찾기한 단어가 없어요.<br>단어의 ☆를 눌러 추가해보세요.</li>'}</ul>`;
