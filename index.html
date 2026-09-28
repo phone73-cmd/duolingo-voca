@@ -381,7 +381,7 @@ function targetId(last){
   if(start.mode==='sec')return S.sections.some(x=>x.id===start.sec)?start.sec:'';
   return S.sections.some(x=>x.id===last)?last:'';
 }
-const APP_VERSION='Ver.40';
+const APP_VERSION='Ver.41';
 const stat=m=>{const e=$('#stat');if(e)e.textContent=m};
 async function flush(){
   if(!ref)return;
@@ -895,9 +895,9 @@ function speakP(t,l){
       u.onend=()=>fin(true);
       u.onerror=e=>fin(false,e&&e.error);
       tm=setTimeout(()=>fin(true,'timeout'),10000);
+      const busy=speechSynthesis.speaking||speechSynthesis.pending;
       if(speechSynthesis.paused)speechSynthesis.resume();
-      speechSynthesis.cancel();
-      speechSynthesis.speak(u);
+      if(busy){speechSynthesis.cancel();setTimeout(()=>speechSynthesis.speak(u),80)}else speechSynthesis.speak(u);
     }catch(e){fin(false,'exception')}
   });
 }
@@ -914,9 +914,9 @@ function speakKoP(t){
       u.onend=()=>fin(true);
       u.onerror=e=>fin(false,e&&e.error);
       tm=setTimeout(()=>fin(true,'timeout'),10000);
+      const busy=speechSynthesis.speaking||speechSynthesis.pending;
       if(speechSynthesis.paused)speechSynthesis.resume();
-      speechSynthesis.cancel();
-      speechSynthesis.speak(u);
+      if(busy){speechSynthesis.cancel();setTimeout(()=>speechSynthesis.speak(u),80)}else speechSynthesis.speak(u);
     }catch(e){fin(false,'exception')}
   });
 }
