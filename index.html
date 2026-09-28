@@ -381,7 +381,7 @@ function targetId(last){
   if(start.mode==='sec')return S.sections.some(x=>x.id===start.sec)?start.sec:'';
   return S.sections.some(x=>x.id===last)?last:'';
 }
-const APP_VERSION='Ver.37';
+const APP_VERSION='Ver.38';
 const stat=m=>{const e=$('#stat');if(e)e.textContent=m};
 async function flush(){
   if(!ref)return;
@@ -794,7 +794,7 @@ function openCfg(){
       const loc=tabLocale(t0.id),pfx=(loc.split('-')[0]||'en').toLowerCase();
       const raw=speechSynthesis.getVoices().filter(v=>nlang(v).startsWith(pfx));
       const shown=voicesOf(t0.id);
-      return `voices raw=${raw.length} shown=${shown.length} | `+raw.map(v=>`${v.name}(${v.lang}${v.default?' default':''}${qual(v)?' Q':''})`).join(' / ');
+      return `voices raw=${raw.length} shown=${shown.length} | `+raw.map(v=>`${v.name}(${v.lang}${v.default?' default':''}${qual(v)?' Q':''}) uri=${v.voiceURI}`).join(' ‖ ');
     }catch(e){return 'diag error: '+e}})();
     return `<div class="vrow"><div class="selwrap"><select id="vo-${t0.id}" data-tab="${t0.id}" aria-label="${esc(t0.name)} 음성">${voiceOptions(t0.id)}</select></div><button class="btn ghost sm" data-act="vprev" data-l="${t0.id}" ${has?'':'disabled'}>▶ ${esc(t0.name)}</button></div>${hint}<p class="ds" style="font-size:10px;line-height:1.5;word-break:break-all;color:#c00;background:#fffbe6;padding:4px 6px;border-radius:6px;margin:2px 0 8px">${esc(diag)}</p>`;
   }).join('')||'<p class="ds">발음 듣기를 켠 탭이 없어요.</p>'}<div class="vrow two"><div class="selwrap"><select id="vo-rate" aria-label="속도">${[[.7,'느리게'],[.9,'보통'],[1.1,'빠르게']].map(x=>`<option value="${x[0]}"${TTS.rate===x[0]?' selected':''}>속도 · ${x[1]}</option>`).join('')}</select></div><div class="selwrap"><select id="vo-gap" aria-label="단어 간격">${[1,1.5].map(n=>`<option value="${n}"${TTS.gap===n?' selected':''}>간격 · ${n}초</option>`).join('')}</select></div></div><label class="opt" style="padding:8px 0;align-items:center"><input type="checkbox" id="vo-rm" ${TTS.readMeaning?'checked':''} class="tbchk"><span style="line-height:18px">재생 시 뜻도 함께 읽기</span></label><div class="vrow"><div class="selwrap"><select id="vo-_ko" aria-label="뜻 읽기 음성">${koVoiceOptions()}</select></div><button class="btn ghost sm" data-act="vprevko" ${koVoicesOf().length?'':'disabled'}>▶ 뜻 미리듣기</button></div><div class="dr"><button class="btn ghost sm" data-act="resetall">설정값 초기화</button><button class="btn ghost" data-act="bk">백업 / 복원</button><button class="btn" id="dlno" data-act="dlgno">닫기(저장)</button></div></div></div>`;
