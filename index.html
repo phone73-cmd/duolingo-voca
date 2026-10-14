@@ -225,7 +225,6 @@ h1{font-size:32px}
 .cfgdl>.opt{margin:5px 0;padding:10px 12px;border:1px solid var(--line);border-radius:13px;background:rgba(255,255,255,.42);transition:.15s ease}
 .cfgdl>.opt:has(input:checked){border-color:var(--green);background:var(--tint);box-shadow:0 0 0 2px rgba(61,154,79,.08)}
 .cfgdl>.opt input[type=radio]{width:18px;height:18px;margin:1px 0 0;accent-color:var(--green);flex:none}
-.cfgdl>#ss{height:43px!important;margin:6px 0 4px!important;padding:0 40px 0 13px;border-radius:13px;border-color:var(--line);background-color:var(--card);box-shadow:0 2px 8px rgba(20,40,20,.04)}
 .cfgdl>.dm{margin:17px 0 7px!important;font-size:15px;display:flex;align-items:center;gap:7px}
 .cfgdl>.dm:not(#cfgt)::before{content:'';width:4px;height:17px;border-radius:4px;background:var(--green);flex:none}
 .cfgdl .vrow{gap:7px;margin:7px 0;padding:7px;border:1px solid var(--line);border-radius:15px;background:rgba(255,255,255,.38);box-shadow:0 2px 8px rgba(20,40,20,.035)}
@@ -235,7 +234,7 @@ h1{font-size:32px}
 .cfgdl .vrow.two{padding:7px;grid-template-columns:1fr 1fr}
 .cfgdl .vrow.two .selwrap{height:40px}
 .cfgdl .opt:has(#vo-rm){border:1px dashed var(--line);background:transparent;margin:8px 0 3px}
-.cfgdl .ds[style*="margin-bottom:4px"]{margin:0 0 7px!important;padding:8px 10px;border-radius:12px;background:var(--tint);font-size:12px}
+.cfgdl .vhint{margin:0 0 7px!important;padding:8px 10px;border-radius:12px;background:var(--tint);font-size:12px;line-height:1.5}
 .cfgdl .dr{position:sticky;bottom:-15px;z-index:3;margin:16px -18px -14px;padding:12px 18px calc(12px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);background:var(--card);justify-content:stretch}
 .cfgdl .dr .btn{flex:1 1 0;min-width:0;padding:10px 8px;border-radius:12px;font-size:13px}
 @media (max-width:520px){
@@ -376,12 +375,12 @@ let ref=null,timer=null,busy=false,again=false,first=true,ver=0,sent=0,lastLocal
 try{lastId=localStorage.getItem('vocab-last')||''}catch(e){}
 let start={mode:'last',sec:''};
 try{Object.assign(start,JSON.parse(localStorage.getItem('vocab-start')||'{}'))}catch(e){}
+if(start.mode==='sec')start.mode='last';
 function targetId(last){
   if(start.mode==='home')return '';
-  if(start.mode==='sec')return S.sections.some(x=>x.id===start.sec)?start.sec:'';
   return S.sections.some(x=>x.id===last)?last:'';
 }
-const APP_VERSION='Ver.45';
+const APP_VERSION='Ver.46';
 const stat=m=>{const e=$('#stat');if(e)e.textContent=m};
 async function flush(){
   if(!ref)return;
@@ -450,7 +449,7 @@ function onDoc(snap){
     if(view.name==='home'&&!(a&&/INPUT|TEXTAREA/.test(a.tagName)))render();
   }
   if(first&&d&&d.start&&typeof d.start.mode==='string'){
-    start={mode:d.start.mode,sec:d.start.sec||''};
+    start={mode:d.start.mode==='sec'?'last':d.start.mode,sec:''};
     try{localStorage.setItem('vocab-start',JSON.stringify(start))}catch(e){}
   }
   if(first&&d&&d.tts&&typeof d.tts==='object'){
@@ -780,18 +779,15 @@ function openTabs(){
 }
 function openCfg(){
   dlg={k:'cfg'};
-  const secs=S.sections;
-  const cur=secs.some(x=>x.id===start.sec)?start.sec:(secs.some(x=>x.id===view.id)?view.id:(secs[0]?secs[0].id:''));
-  const opts=secs.map(x=>`<option value="${x.id}"${x.id===cur?' selected':''}>${tabName(x.lang)} · ${esc(x.name)}</option>`).join('');
   const r=(v,l)=>`<label class="opt"><input type="radio" name="sm" value="${v}"${start.mode===v?' checked':''}><span>${l}</span></label>`;
   const rt=(v,l)=>`<label class="opt"><input type="radio" name="theme" value="${v}"${THEME===v?' checked':''}><span>${l}</span></label>`;
   const bgSw=`<button class="csw${BGCOLOR?'':' on'}" data-act="pickbg" data-c="" aria-label="기본 배경색">✕</button>`+
     PASTELS.map(c=>`<button class="csw${BGCOLOR===c?' on':''}" data-act="pickbg" data-c="${c}" style="background:${c}" aria-label="파스텔 배경색"></button>`).join('');
   const bgIntRow=BGCOLOR?`<p class="ds" style="margin:8px 0 6px">농도</p><div class="rp" style="margin:0">${BGINT_STEPS.map(([v,,l])=>`<button class="pill${BGINT===v?' on':''}" data-act="pickbgint" data-v="${v}">${l}</button>`).join('')}</div>`:'';
-  $('#dlg').innerHTML=`<div class="ov cfgov"><div class="dl cfgdl" role="dialog" aria-modal="true" aria-labelledby="cfgt"><p id="cfgt" class="dm">설정</p><p class="dm" style="margin-top:4px">시작 화면</p><p class="ds">앱을 다시 열 때 처음 보이는 화면을 골라요.</p>${r('last','마지막 화면')}${r('home','첫 화면')}${r('sec','섹션 지정')}<select id="ss" style="margin:8px 0 4px" aria-label="시작 섹션"${secs.length?'':' disabled'}>${opts||'<option>섹션이 없어요</option>'}</select><p class="dm" style="margin-top:4px!important">배경</p>${rt('system','시스템 설정 따름')}${rt('light','기본 (라이트)')}${rt('dark','다크')}<p class="ds" style="margin:6px 0 6px">배경 색상 (라이트 모드에서만 적용돼요)</p><div class="cgrid">${bgSw}</div>${bgIntRow}<p class="dm" style="margin-top:16px">발음 음성</p>${(()=>{const seenK={};return S.tabs.filter(t0=>t0.audio!==false&&!seenK[langKey(t0.id)]&&(seenK[langKey(t0.id)]=1));})().map(t0=>{
+  $('#dlg').innerHTML=`<div class="ov cfgov"><div class="dl cfgdl" role="dialog" aria-modal="true" aria-labelledby="cfgt"><p id="cfgt" class="dm">설정</p><p class="dm" style="margin-top:4px">시작 화면</p><p class="ds">앱을 다시 열 때 처음 보이는 화면을 골라요.</p>${r('last','마지막 화면')}${r('home','첫 화면')}<p class="dm" style="margin-top:4px!important">배경</p>${rt('system','시스템 설정 따름')}${rt('light','기본 (라이트)')}${rt('dark','다크')}<p class="ds" style="margin:6px 0 6px">배경 색상 (라이트 모드에서만 적용돼요)</p><div class="cgrid">${bgSw}</div>${bgIntRow}<p class="dm" style="margin-top:16px">발음 음성</p>${(()=>{const seenK={};return S.tabs.filter(t0=>t0.audio!==false&&!seenK[langKey(t0.id)]&&(seenK[langKey(t0.id)]=1));})().map(t0=>{
     const key=langKey(t0.id);
     const has=voicesOf(t0.id).length>0;
-    const hint=has?'':`<p class="ds" style="margin:2px 0 8px">${esc(t0.name)} 음성이 없어요. 안드로이드는 기기 설정 → 일반 관리(또는 시스템) → 언어 및 입력 → 텍스트 음성 변환 출력 → Google 음성 엔진 → 언어에서 해당 언어 음성 데이터를 내려받으면 나타나요.</p>`;
+    const hint=has?'':`<p class="ds vhint">${esc(t0.name)} 음성이 없어요. 안드로이드는 기기 설정 → 일반 관리(또는 시스템) → 언어 및 입력 → 텍스트 음성 변환 출력 → Google 음성 엔진 → 언어에서 해당 언어 음성 데이터를 내려받으면 나타나요.</p>`;
     return `<div class="vrow"><div class="selwrap"><select id="vo-${key}" data-tab="${t0.id}" aria-label="${esc(t0.name)} 음성">${voiceOptions(t0.id)}</select></div><button class="btn ghost sm" data-act="vprev" data-l="${t0.id}" ${has?'':'disabled'}>▶ ${esc(t0.name)}</button></div>${hint}`;
   }).join('')||'<p class="ds">발음 듣기를 켠 탭이 없어요.</p>'}<div class="vrow two"><div class="selwrap"><select id="vo-rate" aria-label="속도">${[[.7,'느리게'],[.9,'보통'],[1.1,'빠르게']].map(x=>`<option value="${x[0]}"${TTS.rate===x[0]?' selected':''}>속도 · ${x[1]}</option>`).join('')}</select></div><div class="selwrap"><select id="vo-gap" aria-label="단어 간격">${[.5,1,1.5,2].map(n=>`<option value="${n}"${TTS.gap===n?' selected':''}>간격 · ${n}초</option>`).join('')}</select></div></div><label class="opt" style="padding:8px 0;align-items:center"><input type="checkbox" id="vo-rm" ${TTS.readMeaning?'checked':''} class="tbchk"><span style="line-height:18px">재생 시 뜻도 함께 읽기</span></label><div class="vrow"><div class="selwrap"><select id="vo-_ko" aria-label="뜻 읽기 음성">${koVoiceOptions()}</select></div><button class="btn ghost sm" data-act="vprevko" ${koVoicesOf().length?'':'disabled'}>▶ 뜻 미리듣기</button></div><div class="dr"><button class="btn ghost sm" data-act="resetall">설정값 초기화</button><button class="btn ghost" data-act="bk">백업 / 복원</button><button class="btn" id="dlno" data-act="dlgno">닫기(저장)</button></div></div></div>`;
 }
@@ -811,9 +807,8 @@ $('#dlg').addEventListener('change',async e=>{
     try{localStorage.setItem('vocab-theme',THEME)}catch(x){}
     applyTheme();applyBg();save();render();return;
   }
-  if(e.target.id==='ss'){const r=document.querySelector('#dlg input[value=sec]');if(r)r.checked=true}
-  const m=document.querySelector('#dlg input[name=sm]:checked'),ss=$('#ss');
-  start={mode:m?m.value:'last',sec:(ss&&ss.value)||''};
+  const m=document.querySelector('#dlg input[name=sm]:checked');
+  start={mode:m?m.value:'last',sec:''};
   try{localStorage.setItem('vocab-start',JSON.stringify(start))}catch(x){}
   save();
 });
