@@ -384,7 +384,7 @@ function targetId(last){
   if(start.mode==='home')return '';
   return S.sections.some(x=>x.id===last)?last:'';
 }
-const APP_VERSION='Ver.52';
+const APP_VERSION='Ver.53';
 const stat=m=>{const e=$('#stat');if(e)e.textContent=m};
 async function flush(){
   if(!ref)return;
@@ -572,10 +572,19 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(dlg&&dlg.k!=='cf
 
 function parseLine(l){
   l=l.trim();if(!l||l[0]==='#')return null;
-  let e='';const i=l.indexOf(' | ');if(i>0){e=l.slice(i+3).trim();l=l.slice(0,i).trim()}
-  const p=l.split(/\t|\s*[,，、]\s*/);
-  if(p.length>=4&&/[a-zA-Z]/.test(p[1]))return{w:p[0].trim(),r:p[1].trim(),m:p[2].trim(),e:e||p.slice(3).join(', ').trim()};
-  if(p.length>=3&&/[a-zA-Z]/.test(p[1]))return{w:p[0].trim(),r:p[1].trim(),m:p.slice(2).join(', ').trim(),e};
+  let e='',pipe=false;const i=l.indexOf(' | ');
+  if(i>0){e=l.slice(i+3).trim();l=l.slice(0,i).trim();pipe=true}
+  else if(/\s\|$/.test(l)){l=l.replace(/\s*\|$/,'');pipe=true}
+  const re=/\t|\s*[,，、]\s*/g,cuts=[];let mm;
+  while(cuts.length<3&&(mm=re.exec(l))){cuts.push([mm.index,mm.index+mm[0].length]);if(!mm[0])re.lastIndex++}
+  if(cuts.length>=2){
+    const f0=l.slice(0,cuts[0][0]).trim(),f1=l.slice(cuts[0][1],cuts[1][0]).trim();
+    if(f1===''||/[a-zA-Z]/.test(f1)){
+      if(pipe)return{w:f0,r:f1,m:l.slice(cuts[1][1]).trim(),e};
+      const f2=l.slice(cuts[1][1],cuts[2]?cuts[2][0]:l.length).trim();
+      return{w:f0,r:f1,m:f2,e:cuts[2]?l.slice(cuts[2][1]).trim():''};
+    }
+  }
   const m=l.match(/^(.+?)(?:\t|\s[-–]\s|\s*[,=]\s*)(.+)$/);
   return m?{w:m[1].trim(),r:'',m:m[2].trim(),e}:null;
 }
@@ -763,13 +772,16 @@ async function copyBk(){
   bkmsg(ok?'복사했어요':'복사가 막혀 있어요. 위 내용을 길게 눌러 직접 복사하세요');
 }
 function allListText(){
-  const out=['# 전체 섹션 단어 (한 줄에 하나씩: 단어, 발음, 뜻, 예문 — 쉼표로 구분, 발음·예문은 없으면 생략)'];
+  const out=['# 전체 섹션 단어 (한 줄에 하나씩: 단어, 발음, 뜻, 예문 — 쉼표로 구분, 발음이 없고 예문만 있으면 발음 칸은 비워 둠)'];
   S.sections.forEach(sc=>{
     out.push('','# ['+tabName(sc.lang).replace(/^\S+\s/,'')+'] '+sc.name+' ('+sc.words.length+'개)');
     sc.words.forEach(w=>{
-      const c=w.r?[w.w,w.r,w.m]:[w.w,w.m];
-      if(w.e)c.push(w.e);
-      out.push(c.join(', '));
+      let t;
+      if(/,/.test(w.m))t=[w.w,w.r||'',w.m].join(', ')+' | '+(w.e||'');
+      else if(w.e)t=[w.w,w.r||'',w.m,w.e].join(', ');
+      else if(w.r)t=[w.w,w.r,w.m].join(', ');
+      else t=[w.w,w.m].join(', ');
+      out.push(t);
     });
   });
   return out.join('\n');
