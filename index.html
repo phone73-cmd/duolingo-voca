@@ -380,7 +380,7 @@ function targetId(last){
   if(start.mode==='home')return '';
   return S.sections.some(x=>x.id===last)?last:'';
 }
-const APP_VERSION='Ver.46';
+const APP_VERSION='Ver.47';
 const stat=m=>{const e=$('#stat');if(e)e.textContent=m};
 async function flush(){
   if(!ref)return;
@@ -388,20 +388,25 @@ async function flush(){
   busy=true;stat('저장 중…');
   const my=ver;
   const tabsOut=(S.tabs||[]).map(t=>{const c=FAVC[t.id]||t.favColor;return c?Object.assign({},t,{favColor:c}):Object.assign({},t)});
-  try{await ref.set({sections:S.sections,tab,tabs:tabsOut,last:lastId,start,rep,tts:TTS,title:S.title||'',theme:THEME,bgColor:BGCOLOR});sent=my;stat('저장됨 ✓')}
-  catch(e){stat('서버 저장 실패 · 이 기기에는 저장됨')}
+  try{await ref.set({sections:S.sections,tab,tabs:tabsOut,last:lastId,start,rep,tts:TTS,title:S.title||'',theme:THEME,bgColor:BGCOLOR});sent=my;stat('저장됨 ✓');try{localStorage.removeItem('vocab-pending')}catch(x){}}
+  catch(e){const why=e&&(e.code||e.message);stat('서버 저장 실패 · 이 기기에는 저장됨'+(why?' ('+why+')':''))}
   busy=false;
   if(again){again=false;flush()}
 }
 const save=()=>{
   ensureTabs();
   try{localStorage.setItem('vocab-v1',JSON.stringify(S))}catch(e){}
+  try{localStorage.setItem('vocab-pending','1')}catch(e){}
   if(ref){ver++;lastLocal=Date.now();clearTimeout(timer);timer=setTimeout(flush,500)}
 };
 const saveNow=()=>{save();if(ref){clearTimeout(timer);flush()}};
 function onDoc(snap){
   if(snap.metadata.hasPendingWrites)return;
   if(!first&&(busy||ver!==sent||Date.now()-lastLocal<4000))return;
+  if(first){
+    let hasPending=false;try{hasPending=localStorage.getItem('vocab-pending')==='1'}catch(e){}
+    if(hasPending){first=false;stat('동기화 재시도 중…');saveNow();return}
+  }
   const d=snap.exists?snap.data():null;
   if(d&&Array.isArray(d.sections)){
     let incoming=d.sections;
@@ -501,7 +506,7 @@ function onDoc(snap){
     const uid=user?await user.id():null;
     if(!db||!uid){stat(APP_VERSION);return}
     ref=db.doc('data/users/'+uid+'/vocab');
-    ref.onSnapshot(onDoc,()=>stat('동기화 오류 · 이 기기에는 저장됨'));
+    ref.onSnapshot(onDoc,(e)=>{const why=e&&(e.code||e.message);stat('동기화 오류 · 이 기기에는 저장됨'+(why?' ('+why+')':''))});
   }catch(e){stat(APP_VERSION)}
 })();
 let view={name:'home'},study=null;
