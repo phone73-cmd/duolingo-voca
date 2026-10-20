@@ -54,6 +54,8 @@ details form{display:grid;gap:8px;margin-top:10px}
 .deck.back{background:var(--tint);border-color:var(--green)}
 .big{display:block;font:400 38px/1.25 Jua,"Noto Sans KR",sans-serif;word-break:break-word}
 .hint{display:block;color:var(--sub);font-size:14px;margin-top:14px}
+.hint .hw,.hint .hp,.hint .he{display:block;overflow-wrap:anywhere}
+.hint .hp,.hint .he{margin-top:4px}
 .act{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .act .btn{padding:14px}
 .res{text-align:center;padding:20px 0}
@@ -1114,7 +1116,7 @@ function studyView(){
   }
   const w=d.deck[d.i];
   const card=d.flip
-    ?`<button class="deck back" data-act="flip"><span class="big">${esc(w.m)}</span><span class="hint">${esc(w.w)}${w.r?' ('+esc(w.r)+')':''}${w.e?' · '+esc(w.e):''}</span></button>`
+    ?`<button class="deck back" data-act="flip"><span class="big">${esc(w.m)}</span><span class="hint"><span class="hw">${esc(w.w)}</span>${w.r?`<span class="hp">${esc(w.r)}</span>`:''}${w.e?`<span class="he">${esc(w.e)}</span>`:''}</span></button>`
     :`<button class="deck" data-act="flip"><span class="big">${esc(w.w)}</span><span class="hint">눌러서 뜻 보기</span></button>`;
   const aud=tabAudio(s.lang);
   return `<div class="top"><button class="link" data-act="back">← 그만하기</button><span>${aud?'<button class="link" data-act="speak">🔊 듣기</button> ':''}${d.i+1} / ${d.deck.length}</span></div>${card}
