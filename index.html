@@ -302,7 +302,7 @@ h1{font-size:32px}
 </style>
 </head>
 <body>
-<div class="statbar"><div id="stat" class="stat"></div><div class="header-tools"><button class="ic" data-act="cfg" aria-label="설정" style="width:44px;height:44px;font-size:20px">⚙</button><div class="status-tools"><div class="status-icons" aria-label="앱 상태"><button class="status-icon" id="connection-icon" data-act="appinfo" aria-label="연결 상태 · 안내 열기"></button><button class="status-icon" id="offline-icon" data-act="appinfo" aria-label="오프라인 준비 상태 · 안내 열기"></button><button class="status-icon info-icon" id="app-info-button" data-act="appinfo" aria-label="앱 안내" aria-expanded="false" aria-controls="app-info-panel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6"/><circle cx="12" cy="7.5" r=".8" fill="currentColor" stroke="none"/></svg><span class="update-dot" id="update-dot" hidden></span></button></div><section class="app-info-panel" id="app-info-panel" role="dialog" aria-labelledby="app-info-heading" hidden><div class="app-info-heading"><h2 id="app-info-heading" tabindex="-1">앱 사용 안내</h2><button class="ic sm" data-act="closeappinfo" aria-label="안내 닫기">×</button></div><dl class="runtime-details"><div><dt>연결 상태</dt><dd id="runtime-network"></dd></div><div><dt>오프라인</dt><dd id="offline-status"></dd></div><div><dt>현재 버전</dt><dd id="runtime-version">v1.0.7</dd></div></dl><p class="runtime-help">오프라인에서도 저장된 단어 보기·등록·학습과 엑셀 가져오기를 사용할 수 있어요. 발음 재생은 기기에 저장된 음성과 브라우저 지원에 따라 달라요.</p><div class="runtime-update"><p id="update-message" role="status" aria-live="polite"></p><div class="import-actions"><button class="btn ghost sm" id="update-button" data-act="checkupdate">새 버전 확인</button><button class="btn sm" id="update-apply-button" data-act="applyupdate" hidden>새 버전 적용</button></div></div></section></div></div></div>
+<div class="statbar"><div id="stat" class="stat"></div><div class="header-tools"><button class="ic" data-act="cfg" aria-label="설정" style="width:44px;height:44px;font-size:20px">⚙</button><div class="status-tools"><div class="status-icons" aria-label="앱 상태"><button class="status-icon" id="connection-icon" data-act="appinfo" aria-label="연결 상태 · 안내 열기"></button><button class="status-icon" id="offline-icon" data-act="appinfo" aria-label="오프라인 준비 상태 · 안내 열기"></button><button class="status-icon info-icon" id="app-info-button" data-act="appinfo" aria-label="앱 안내" aria-expanded="false" aria-controls="app-info-panel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6"/><circle cx="12" cy="7.5" r=".8" fill="currentColor" stroke="none"/></svg><span class="update-dot" id="update-dot" hidden></span></button></div><section class="app-info-panel" id="app-info-panel" role="dialog" aria-labelledby="app-info-heading" hidden><div class="app-info-heading"><h2 id="app-info-heading" tabindex="-1">앱 사용 안내</h2><button class="ic sm" data-act="closeappinfo" aria-label="안내 닫기">×</button></div><dl class="runtime-details"><div><dt>연결 상태</dt><dd id="runtime-network"></dd></div><div><dt>오프라인</dt><dd id="offline-status"></dd></div><div><dt>현재 버전</dt><dd id="runtime-version">v1.0.8</dd></div></dl><p class="runtime-help">오프라인에서도 저장된 단어 보기·등록·학습과 엑셀 가져오기를 사용할 수 있어요. 발음 재생은 기기에 저장된 음성과 브라우저 지원에 따라 달라요.</p><div class="runtime-update"><p id="update-message" role="status" aria-live="polite"></p><div class="import-actions"><button class="btn ghost sm" id="update-button" data-act="checkupdate">새 버전 확인</button><button class="btn sm" id="update-apply-button" data-act="applyupdate" hidden>새 버전 적용</button></div></div></section></div></div></div>
 <div id="editor-notice" class="storage-warning" hidden><span id="editor-message"></span><button class="btn ghost sm" data-act="bk">백업 열기</button><button class="btn ghost sm" data-act="reloadlatest">최신 내용 열기</button></div>
 <div id="storage-warning" class="storage-warning" role="alert" hidden><span>이 기기에 저장하지 못했어요. 새로고침하거나 창을 닫기 전에 백업 파일을 저장해 주세요.</span><button class="btn ghost sm" data-act="bk">백업 열기</button></div>
 <div id="app"></div>
@@ -497,7 +497,7 @@ function targetId(last){
   if(start.mode==='home')return '';
   return S.sections.some(x=>x.id===last)?last:'';
 }
-const APP_VERSION='v1.0.7';
+const APP_VERSION='v1.0.8';
 const stat=m=>{const e=$('#stat');if(e)e.textContent=m};
 const save=()=>{
   if(!canWriteLocal())return false;
@@ -845,37 +845,54 @@ function openTx(){
   $('#dlg').innerHTML=`<div class="ov"><div class="dl text-dialog" role="dialog" aria-modal="true" aria-labelledby="txh">${DLX}<p id="txh" class="dm">단어 가져오기 / 내보내기 · ${esc(s.name)}</p><p class="ds">내보내기는 항목 이름 형식이에요. 쉼표가 포함된 뜻과 예문도 그대로 저장돼요.</p><textarea id="txt" rows="4" readonly aria-label="내보낼 단어 목록">${esc(listText(s))}</textarea><div class="import-actions"><button class="btn ghost" data-act="txcopy">복사</button><button class="btn ghost" data-act="txfile">.txt 저장</button><button class="btn ghost" data-act="excelsection">엑셀 저장</button></div><hr class="import-divider"><p class="dm">단어 가져오기</p>${textImportControls('tx')}<p id="txm" class="ds" role="status"></p><div class="dr"><button class="btn" data-act="dlgno">닫기</button></div></div></div>`;
 }
 
-let DOWNLOADS=null;
-
-function prefersDirectFileDownload(){
-  const ua=navigator.userAgent||'';
-  const safari=/AppleWebKit/i.test(ua)&&/Safari/i.test(ua)&&!/Chrome|Chromium|CriOS|FxiOS|Edg|OPR|OPiOS|SamsungBrowser|DuckDuckGo/i.test(ua);
-  let standalone=navigator.standalone===true;
-  try{standalone=standalone||(typeof matchMedia==='function'&&matchMedia('(display-mode: standalone)').matches)}catch(e){}
-  return safari&&!standalone;
-}
 function downloadExportFile(file){
   const url=URL.createObjectURL(file),a=document.createElement('a');
   try{a.href=url;a.download=file.name;document.body.appendChild(a);a.click();}
   finally{a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);}
 }
-async function shareFile(file,say){
-  if(DOWNLOADS){
-    try{await DOWNLOADS.save({filename:file.name,data:file});say('저장했어요');return}
-    catch(e){
-      const c=e&&e.code;
-      if(c==='declined'){say('저장을 취소했어요');return}
-      if(c==='rate_limited'){say('잠시 후 다시 눌러 주세요');return}
+async function saveExportFile(file,say,method){
+  if(method==='choose'){
+    try{
+      if(typeof window.showSaveFilePicker==='function'){
+        const handle=await window.showSaveFilePicker({suggestedName:file.name});
+        const writable=await handle.createWritable();
+        try{await writable.write(file);await writable.close();}
+        catch(e){try{await writable.abort()}catch(x){}throw e;}
+        say('저장했어요');return;
+      }
+      if(navigator.canShare&&navigator.canShare({files:[file]})){
+        await navigator.share({files:[file],title:'',text:''});
+        say('공유창 처리를 마쳤어요. 선택한 폴더에서 파일을 확인해 주세요.');return;
+      }
+      say('이 브라우저는 저장 위치 선택을 지원하지 않아요. 기본 폴더 다운로드를 이용해 주세요.');
+    }catch(e){
+      say(e&&e.name==='AbortError'?'저장을 취소했어요':'저장하지 못했어요. 다시 시도하거나 기본 폴더 다운로드를 이용해 주세요.');
     }
-  }
-  if(prefersDirectFileDownload()){
-    try{downloadExportFile(file);say('다운로드를 요청했어요. Safari의 다운로드 목록을 확인해 주세요.');}
-    catch(e){say('다운로드를 시작하지 못했어요. 다시 시도해 주세요.');}
     return;
   }
-  try{if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file]});return}}catch(e){if(e&&e.name==='AbortError')return}
-  try{downloadExportFile(file);say('파일 다운로드를 요청했어요. 다운로드 목록을 확인해 주세요.');}
-  catch(e){say('파일 저장을 시작하지 못했어요. 다시 시도해 주세요.');}
+  try{downloadExportFile(file);say('다운로드를 요청했어요. 브라우저의 기본 다운로드 폴더를 확인해 주세요.');}
+  catch(e){say('다운로드를 시작하지 못했어요. 다시 시도해 주세요.');}
+}
+let exportDialog=null;
+async function shareFile(file,say){
+  if(exportDialog){exportDialog.focus();return;}
+  const canChoose=typeof window.showSaveFilePicker==='function'||!!(navigator.canShare&&navigator.canShare({files:[file]}));
+  const box=document.createElement('dialog');exportDialog=box;
+  box.style.cssText='border:0;padding:0;background:transparent;max-width:calc(100% - 32px);max-height:calc(100% - 32px);color:inherit';
+  box.setAttribute('aria-labelledby','export-title');
+  box.innerHTML=`<div class="dl backup-dialog"><p class="dm" id="export-title">파일 저장</p><p class="ds" style="overflow-wrap:anywhere">${esc(file.name)}</p><p class="ds">저장 위치 선택: 공유창에서는 ‘파일에 저장’을 누른 뒤 ‘나의 iPhone’ 또는 원하는 폴더를 선택하세요.</p><div class="backup-actions"><button class="btn" data-export="choose" ${canChoose?'':'disabled'}>저장 위치 선택</button><button class="btn ghost" data-export="download">기본 폴더 다운로드</button></div><p class="ds">기본 폴더 다운로드는 브라우저의 다운로드 설정을 따릅니다. Safari 공유창에 불필요한 텍스트가 함께 표시되면 이 방법을 이용하세요.</p>${canChoose?'':'<p class="ds">이 브라우저는 저장 위치 선택을 지원하지 않아요.</p>'}<div class="dr"><button class="btn ghost" data-export="cancel">취소</button></div></div>`;
+  return new Promise(resolve=>{
+    const finish=()=>{box.close();box.remove();exportDialog=null;};
+    box.addEventListener('keydown',e=>e.stopPropagation());
+    box.addEventListener('cancel',e=>{e.preventDefault();finish();resolve();});
+    box.addEventListener('click',async e=>{
+      e.stopPropagation();const button=e.target.closest('[data-export]');if(!button)return;
+      const method=button.dataset.export;finish();
+      if(method!=='cancel')await saveExportFile(file,say,method);
+      resolve();
+    });
+    document.body.appendChild(box);box.showModal();
+  });
 }
 
 let sheet=null,sheetReturn=null;
@@ -2018,7 +2035,7 @@ async function applyAppUpdate(){
     }catch(e){updateBusy=false;offerAppUpdate();updateNotice('확인하지 못했어요. 인터넷 연결 후 다시 눌러 주세요.');}
     return;
   }
-  if(sheet||dlg||player||view.name==='study'){
+  if(exportDialog||sheet||dlg||player||view.name==='study'){
     updateNotice('입력·학습을 마치고 창을 닫은 뒤 적용해 주세요.');return;
   }
   if(localSaveFailed||editorMode==='conflict'){
