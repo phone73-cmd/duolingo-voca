@@ -380,7 +380,7 @@ function targetId(last){
   if(start.mode==='home')return '';
   return S.sections.some(x=>x.id===last)?last:'';
 }
-const APP_VERSION='Ver.48';
+const APP_VERSION='Ver.49';
 const stat=m=>{const e=$('#stat');if(e)e.textContent=m};
 async function flush(){
   if(!ref)return;
@@ -570,6 +570,7 @@ function parseLine(l){
   l=l.trim();if(!l||l[0]==='#')return null;
   let e='';const i=l.indexOf(' | ');if(i>0){e=l.slice(i+3).trim();l=l.slice(0,i).trim()}
   const p=l.split(/\t|\s*[,，、]\s*/);
+  if(p.length>=4&&/[a-zA-Z]/.test(p[1]))return{w:p[0].trim(),r:p[1].trim(),m:p[2].trim(),e:e||p.slice(3).join(', ').trim()};
   if(p.length>=3&&/[a-zA-Z]/.test(p[1]))return{w:p[0].trim(),r:p[1].trim(),m:p.slice(2).join(', ').trim(),e};
   const m=l.match(/^(.+?)(?:\t|\s[-–]\s|\s*[,=]\s*)(.+)$/);
   return m?{w:m[1].trim(),r:'',m:m[2].trim(),e}:null;
@@ -579,7 +580,7 @@ function listText(s){
     const c=w.r?[w.w,w.r,w.m]:((/,/.test(w.m)||!/[가-힣]/.test(w.m))?[w.w,'',w.m]:[w.w,w.m]);
     return c.join(', ')+(w.e?' | '+w.e:'');
   });
-  return ['# 단어, 발음, 뜻 | 예문(선택)'].concat(rows).join('\n');
+  return ['# 단어, 발음, 뜻, 예문(선택, 쉼표로 구분)'].concat(rows).join('\n');
 }
 async function readText(f){
   const b=await f.arrayBuffer();
@@ -590,7 +591,7 @@ const txmsg=x=>{const m=$('#txm');if(m)m.textContent=x};
 function openTx(){
   const s=sec();if(!s)return;
   dlg={k:'tx'};
-  $('#dlg').innerHTML=`<div class="ov"><div class="dl" role="dialog" aria-modal="true" aria-labelledby="txh">${DLX}<p id="txh" class="dm">텍스트 목록 · ${esc(s.name)}</p><p class="ds">한 줄에 하나씩 <b>단어, 발음, 뜻</b> 형식이에요. 예문은 줄 끝에 <b> | 예문</b>으로 붙여요.</p><textarea id="txt" rows="4" readonly>${esc(listText(s))}</textarea><div class="dr" style="margin:8px 0 14px"><button class="btn ghost" data-act="txcopy">복사</button><button class="btn ghost" data-act="txfile">.txt 저장</button></div><textarea id="txi" rows="4" placeholder="추가할 목록을 여기에 붙여넣으세요"></textarea><div class="dr" style="margin:8px 0"><button class="btn ghost" data-act="txpaste">붙여넣은 목록 추가</button><button class="btn ghost" data-act="txpick">.txt 파일에서 추가</button></div><input type="file" id="txf" accept=".txt,text/plain" hidden><p id="txm" class="ds"></p><div class="dr"><button class="btn" data-act="dlgno">닫기</button></div></div></div>`;
+  $('#dlg').innerHTML=`<div class="ov"><div class="dl" role="dialog" aria-modal="true" aria-labelledby="txh">${DLX}<p id="txh" class="dm">텍스트 목록 · ${esc(s.name)}</p><p class="ds">한 줄에 하나씩 <b>단어, 발음, 뜻, 예문</b> 형식이에요(모두 쉼표로 구분, 예문은 선택).</p><textarea id="txt" rows="4" readonly>${esc(listText(s))}</textarea><div class="dr" style="margin:8px 0 14px"><button class="btn ghost" data-act="txcopy">복사</button><button class="btn ghost" data-act="txfile">.txt 저장</button></div><textarea id="txi" rows="4" placeholder="추가할 목록을 여기에 붙여넣으세요"></textarea><div class="dr" style="margin:8px 0"><button class="btn ghost" data-act="txpaste">붙여넣은 목록 추가</button><button class="btn ghost" data-act="txpick">.txt 파일에서 추가</button></div><input type="file" id="txf" accept=".txt,text/plain" hidden><p id="txm" class="ds"></p><div class="dr"><button class="btn" data-act="dlgno">닫기</button></div></div></div>`;
 }
 let DOWNLOADS=null;
 (async()=>{try{DOWNLOADS=await window.claude.use('downloads')}catch(e){DOWNLOADS=null}})();
@@ -641,7 +642,7 @@ function openSheet(mode,w,secOverride){
   const s=secOverride||sec();if(!s)return;
   const edit=mode==='edit',val=k=>edit?esc(w[k]||''):'';
   sheet={mode,id:w&&w.id,secId:s.id};
-  const bulk=edit?'':`<form data-form="bulk" data-pane="many" hidden><textarea name="t" rows="6" placeholder="한 줄에 하나씩 단어(, 발음, 뜻) — 단어만 적어도 돼요&#10;${esc(s.name)} 예시 단어, 발음, 뜻" required></textarea><div class="row"><button class="btn">붙여넣은 단어 추가</button></div></form>`;
+  const bulk=edit?'':`<form data-form="bulk" data-pane="many" hidden><textarea name="t" rows="6" placeholder="한 줄에 하나씩 단어(, 발음, 뜻, 예문) — 단어만 적어도 돼요&#10;${esc(s.name)} 예시 단어, 발음, 뜻, 예문" required></textarea><div class="row"><button class="btn">붙여넣은 단어 추가</button></div></form>`;
   $('#sheet').innerHTML=`<div class="sov"><div class="sh2" role="dialog" aria-modal="true" aria-label="${edit?'단어 수정':'단어 추가'}"><div class="grab"></div>
   <div class="sht"><b>${edit?'단어 수정':'단어 추가'}</b>${edit?'':'<div class="seg"><button type="button" data-act="pane" data-p="one" class="on">한 개</button><button type="button" data-act="pane" data-p="many">여러 개</button></div>'}<button class="ic" data-act="sclose" aria-label="닫기">×</button></div>
   <form class="add" data-form="${edit?'editw':'addw'}"${edit?` data-id="${w.id}"`:''} data-pane="one">
@@ -1503,10 +1504,14 @@ document.addEventListener('submit',async e=>{
     let add=0,skip=0;
     d.get('t').split('\n').forEach(l=>{
       l=l.trim();if(!l)return;
+      let e='';const pi=l.indexOf(' | ');if(pi>0){e=l.slice(pi+3).trim();l=l.slice(0,pi).trim()}
       let w=null;
-      {const p=l.split(/\t|\s*[,，、]\s*/);if(p.length>=3&&/[a-zA-Z]/.test(p[1]))w={w:p[0].trim(),r:p[1].trim(),m:p.slice(2).join(', ').trim(),e:''};}
-      if(!w){const mm=l.match(/^(.+?)(?:\t|\s[-–]\s|\s*[,=]\s*)(.+)$/);if(mm)w={w:mm[1].trim(),r:'',m:mm[2].trim(),e:''};}
-      if(!w)w={w:l,r:'',m:'',e:''};
+      {const p=l.split(/\t|\s*[,，、]\s*/);
+        if(p.length>=4&&/[a-zA-Z]/.test(p[1]))w={w:p[0].trim(),r:p[1].trim(),m:p[2].trim(),e:e||p.slice(3).join(', ').trim()};
+        else if(p.length>=3&&/[a-zA-Z]/.test(p[1]))w={w:p[0].trim(),r:p[1].trim(),m:p.slice(2).join(', ').trim(),e};
+      }
+      if(!w){const mm=l.match(/^(.+?)(?:\t|\s[-–]\s|\s*[,=]\s*)(.+)$/);if(mm)w={w:mm[1].trim(),r:'',m:mm[2].trim(),e}}
+      if(!w)w={w:l,r:'',m:'',e};
       if(!w.w)return;
       if(s.words.some(x=>x.w===w.w&&x.m===w.m)){skip++;return}
       s.words.push({id:uid(),w:w.w,r:w.r,m:w.m,e:w.e,known:false});add++;
