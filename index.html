@@ -384,7 +384,7 @@ function targetId(last){
   if(start.mode==='home')return '';
   return S.sections.some(x=>x.id===last)?last:'';
 }
-const APP_VERSION='Ver.50';
+const APP_VERSION='Ver.51';
 const stat=m=>{const e=$('#stat');if(e)e.textContent=m};
 async function flush(){
   if(!ref)return;
@@ -754,13 +754,25 @@ function resetAll(){
 function openBk(){
   dlg={k:'bk'};
   const json=JSON.stringify({v:2,sections:S.sections,tabs:S.tabs,tab,start,title:S.title||'',theme:THEME,bgColor:BGCOLOR});
-  $('#dlg').innerHTML=`<div class="ov"><div class="dl" role="dialog" aria-modal="true" aria-labelledby="bkh"><p id="bkh" class="dm">백업 / 복원</p><p id="bkm" class="ds"></p><p class="ds">다른 기기나 앱에서 불러올 수 있어요!</p><textarea id="bkt" rows="3" readonly hidden>${esc(json)}</textarea><div class="dr" style="margin:8px 0"><button class="btn ghost" data-act="bkfile">파일 저장</button><button class="btn ghost" data-act="bkpick">파일 불러오기</button></div><input type="file" id="bkf" accept="application/json,.json" hidden><div class="dr"><button class="btn" data-act="dlgno">닫기</button></div></div></div>`;
+  $('#dlg').innerHTML=`<div class="ov"><div class="dl" role="dialog" aria-modal="true" aria-labelledby="bkh"><p id="bkh" class="dm">백업 / 복원</p><p id="bkm" class="ds"></p><p class="ds">다른 기기나 앱에서 불러올 수 있어요!</p><textarea id="bkt" rows="3" readonly hidden>${esc(json)}</textarea><div class="dr" style="margin:8px 0"><button class="btn ghost" data-act="bkfile">파일 저장</button><button class="btn ghost" data-act="bktxt">전체 단어 텍스트 저장</button><button class="btn ghost" data-act="bkpick">파일 불러오기</button></div><input type="file" id="bkf" accept="application/json,.json" hidden><div class="dr"><button class="btn" data-act="dlgno">닫기</button></div></div></div>`;
 }
 const bkmsg=x=>{const m=$('#bkm');if(m)m.textContent=x};
 async function copyBk(){
   const t=$('#bkt');let ok=false;
   try{await navigator.clipboard.writeText(t.value);ok=true}catch(e){try{t.select();ok=document.execCommand('copy')}catch(x){}}
   bkmsg(ok?'복사했어요':'복사가 막혀 있어요. 위 내용을 길게 눌러 직접 복사하세요');
+}
+function allListText(){
+  const out=['# 전체 섹션 단어 (한 줄에 하나씩: 단어, 발음, 뜻 | 예문)'];
+  S.sections.forEach(sc=>{
+    out.push('','# ['+tabName(sc.lang).replace(/^\S+\s/,'')+'] '+sc.name+' ('+sc.words.length+'개)');
+    listText(sc).split('\n').slice(1).forEach(l=>out.push(l));
+  });
+  return out.join('\n');
+}
+async function saveAllText(){
+  const name='단어장-전체단어-'+new Date().toISOString().slice(0,10)+'.txt';
+  return shareFile(new File(['\ufeff'+allListText()],name,{type:'text/plain'}),bkmsg);
 }
 async function saveBkFile(){
   const name='단어장-백업-'+new Date().toISOString().slice(0,10)+'.json';
@@ -1350,6 +1362,7 @@ document.addEventListener('click',e=>{
   else if(a==='txpaste'){txImport($('#txi').value);return;}
   else if(a==='txpick'){$('#txf').click();return;}
   else if(a==='bkfile'){saveBkFile();return;}
+  else if(a==='bktxt'){saveAllText();return;}
   else if(a==='bkpick'){$('#bkf').click();return;}
   else if(a==='dlgno'){closeDlg();return;}
   else if(a==='dlgok'){
