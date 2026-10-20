@@ -384,7 +384,7 @@ function targetId(last){
   if(start.mode==='home')return '';
   return S.sections.some(x=>x.id===last)?last:'';
 }
-const APP_VERSION='Ver.51';
+const APP_VERSION='Ver.52';
 const stat=m=>{const e=$('#stat');if(e)e.textContent=m};
 async function flush(){
   if(!ref)return;
@@ -763,10 +763,14 @@ async function copyBk(){
   bkmsg(ok?'복사했어요':'복사가 막혀 있어요. 위 내용을 길게 눌러 직접 복사하세요');
 }
 function allListText(){
-  const out=['# 전체 섹션 단어 (한 줄에 하나씩: 단어, 발음, 뜻 | 예문)'];
+  const out=['# 전체 섹션 단어 (한 줄에 하나씩: 단어, 발음, 뜻, 예문 — 쉼표로 구분, 발음·예문은 없으면 생략)'];
   S.sections.forEach(sc=>{
     out.push('','# ['+tabName(sc.lang).replace(/^\S+\s/,'')+'] '+sc.name+' ('+sc.words.length+'개)');
-    listText(sc).split('\n').slice(1).forEach(l=>out.push(l));
+    sc.words.forEach(w=>{
+      const c=w.r?[w.w,w.r,w.m]:[w.w,w.m];
+      if(w.e)c.push(w.e);
+      out.push(c.join(', '));
+    });
   });
   return out.join('\n');
 }
