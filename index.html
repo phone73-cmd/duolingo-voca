@@ -154,7 +154,9 @@ h1{font-size:32px}
 .wtop{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
 .wt b{font-size:20px;margin-right:10px}
 .wt{min-width:0}
-.wt .rd{display:block;overflow-wrap:anywhere;color:var(--greenD);font-size:14px;margin:2px 0 0}
+.wr>.rd{display:block;width:100%;overflow-wrap:anywhere;color:var(--greenD);font-size:14px;margin:2px 0 0}
+.rd .pron-line{color:inherit}
+.w.k .rd .pron-line{opacity:1}
 .wt .hg{color:var(--green);font-size:14px;margin:0 8px 0 0}
 .wicons{display:flex;gap:6px;flex:none}
 .wm{font-size:16px;margin-top:6px}
@@ -311,7 +313,7 @@ h1{font-size:32px}
 </style>
 </head>
 <body>
-<div class="statbar"><div id="stat" class="stat"></div><div class="header-tools"><button class="ic" data-act="cfg" aria-label="설정" style="width:44px;height:44px;font-size:20px">⚙</button><div class="status-tools"><div class="status-icons" aria-label="앱 상태"><button class="status-icon" id="connection-icon" data-act="appinfo" aria-label="연결 상태 · 안내 열기"></button><button class="status-icon" id="offline-icon" data-act="appinfo" aria-label="오프라인 준비 상태 · 안내 열기"></button><button class="status-icon info-icon" id="app-info-button" data-act="appinfo" aria-label="앱 안내" aria-expanded="false" aria-controls="app-info-panel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6"/><circle cx="12" cy="7.5" r=".8" fill="currentColor" stroke="none"/></svg><span class="update-dot" id="update-dot" hidden></span></button></div><section class="app-info-panel" id="app-info-panel" role="dialog" aria-labelledby="app-info-heading" hidden><div class="app-info-heading"><h2 id="app-info-heading" tabindex="-1">앱 사용 안내</h2><button class="ic sm" data-act="closeappinfo" aria-label="안내 닫기">×</button></div><dl class="runtime-details"><div><dt>연결 상태</dt><dd id="runtime-network"></dd></div><div><dt>오프라인</dt><dd id="offline-status"></dd></div><div><dt>현재 버전</dt><dd id="runtime-version">v1.0.9</dd></div></dl><p class="runtime-help">오프라인에서도 저장된 단어 보기·등록·학습과 엑셀 가져오기를 사용할 수 있어요. 발음 재생은 기기에 저장된 음성과 브라우저 지원에 따라 달라요.</p><div class="runtime-update"><p id="update-message" role="status" aria-live="polite"></p><div class="import-actions"><button class="btn ghost sm" id="update-button" data-act="checkupdate">새 버전 확인</button><button class="btn sm" id="update-apply-button" data-act="applyupdate" hidden>새 버전 적용</button></div></div></section></div></div></div>
+<div class="statbar"><div id="stat" class="stat"></div><div class="header-tools"><button class="ic" data-act="cfg" aria-label="설정" style="width:44px;height:44px;font-size:20px">⚙</button><div class="status-tools"><div class="status-icons" aria-label="앱 상태"><button class="status-icon" id="connection-icon" data-act="appinfo" aria-label="연결 상태 · 안내 열기"></button><button class="status-icon" id="offline-icon" data-act="appinfo" aria-label="오프라인 준비 상태 · 안내 열기"></button><button class="status-icon info-icon" id="app-info-button" data-act="appinfo" aria-label="앱 안내" aria-expanded="false" aria-controls="app-info-panel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6"/><circle cx="12" cy="7.5" r=".8" fill="currentColor" stroke="none"/></svg><span class="update-dot" id="update-dot" hidden></span></button></div><section class="app-info-panel" id="app-info-panel" role="dialog" aria-labelledby="app-info-heading" hidden><div class="app-info-heading"><h2 id="app-info-heading" tabindex="-1">앱 사용 안내</h2><button class="ic sm" data-act="closeappinfo" aria-label="안내 닫기">×</button></div><dl class="runtime-details"><div><dt>연결 상태</dt><dd id="runtime-network"></dd></div><div><dt>오프라인</dt><dd id="offline-status"></dd></div><div><dt>현재 버전</dt><dd id="runtime-version">v1.0.10</dd></div></dl><p class="runtime-help">오프라인에서도 저장된 단어 보기·등록·학습과 엑셀 가져오기를 사용할 수 있어요. 발음 재생은 기기에 저장된 음성과 브라우저 지원에 따라 달라요.</p><div class="runtime-update"><p id="update-message" role="status" aria-live="polite"></p><div class="import-actions"><button class="btn ghost sm" id="update-button" data-act="checkupdate">새 버전 확인</button><button class="btn sm" id="update-apply-button" data-act="applyupdate" hidden>새 버전 적용</button></div></div></section></div></div></div>
 <div id="editor-notice" class="storage-warning" hidden><span id="editor-message"></span><button class="btn ghost sm" data-act="bk">백업 열기</button><button class="btn ghost sm" data-act="reloadlatest">최신 내용 열기</button></div>
 <div id="storage-warning" class="storage-warning" role="alert" hidden><span>이 기기에 저장하지 못했어요. 새로고침하거나 창을 닫기 전에 백업 파일을 저장해 주세요.</span><button class="btn ghost sm" data-act="bk">백업 열기</button></div>
 <div id="app"></div>
@@ -512,7 +514,7 @@ function targetId(last){
   if(start.mode==='home')return '';
   return S.sections.some(x=>x.id===last)?last:'';
 }
-const APP_VERSION='v1.0.9';
+const APP_VERSION='v1.0.10';
 const stat=m=>{const e=$('#stat');if(e)e.textContent=m};
 const save=()=>{
   if(!canWriteLocal())return false;
@@ -787,6 +789,14 @@ function invalidateTextImport(prefix){
   if(textImportState&&textImportState.prefix===prefix)textImportState=null;
   const preview=$('#'+prefix+'-preview');if(preview)preview.innerHTML='';
 }
+function importPreviewNotice(result){
+  const {add,skip,bad}=result;
+  if(add)return '확인 후 ‘정상 '+add+'개 추가’를 누르면 미리보기 표시 범위와 관계없이 모두 추가됩니다.';
+  if(skip&&bad)return '추가할 항목이 없어요. '+skip+'개는 중복이고, '+bad+'묶음은 형식을 확인해야 해요. 오류 안내에 따라 입력을 수정해 주세요.';
+  if(bad)return '추가할 항목이 없어요. '+bad+'묶음의 형식을 확인해야 해요. 오류 안내에 따라 입력을 수정해 주세요.';
+  if(skip)return '모두 기존 단어 또는 입력 목록 안의 중복이에요. 같은 섹션의 단어와 뜻이 같으면 다시 추가하지 않아요.';
+  return '가져올 단어가 없어요. 단어 목록을 입력해 주세요.';
+}
 function previewTextImport(prefix){
   const cs=importSection(prefix),input=$('#'+prefix+'-input'),select=$('#'+prefix+'-format'),preview=$('#'+prefix+'-preview');
   if(!cs||!input||!select||!preview)return;
@@ -796,7 +806,7 @@ function previewTextImport(prefix){
   textImportState={prefix,secId:cs.id,text,format,route};
   const status={ready:'추가 예정',duplicate:'중복 · 건너뜀',bad:'확인 필요'};
   const cards=result.rows.slice(0,100).map(row=>`<article class="import-card ${row.status}"><p class="import-card-title">${row.line}번째 줄 · ${status[row.status]}</p>${row.destination?`<p class="ds">${esc(tabName(row.destination.lang))} · ${esc(row.destination.name)}${row.destination.id?'':' (새 섹션)'}</p>`:''}${row.issues.length?`<p class="import-error">${row.issues.map(esc).join('<br>')}</p><pre>${esc(row.raw)}</pre>`:`<dl>${[['단어',row.word.w],['발음',row.word.r],['뜻',row.word.m],['예문',row.word.e]].map(([label,value])=>`<div><dt>${label}</dt><dd>${value?(label==='발음'?pronunciationHtml(value):esc(value)):'<span class="sub">비어 있음</span>'}</dd></div>`).join('')}</dl>`}</article>`).join('');
-  preview.innerHTML=`<p class="import-summary">추가 예정 ${result.add}개 · 중복 ${result.skip}개 · 확인 필요 ${result.bad}묶음</p><p class="ds">${route?'파일의 언어·섹션대로 추가':'추가할 위치: '+esc(cs.name)}${format==='legacy'?'<br>기존 형식은 발음·뜻을 자동 구분하므로 내용을 확인해 주세요.':''}</p>${cards||'<p class="ds">가져올 단어가 없어요. 단어 목록을 입력해 주세요.</p>'}${result.rows.length>100?`<p class="ds">앞의 100묶음만 표시했어요. 확인 후 정상 항목 ${result.add}개가 모두 추가됩니다.</p>`:''}${result.bad?'<p class="import-error">확인 필요 항목은 추가하지 않아요. 입력 내용을 고친 뒤 다시 미리보기 할 수 있어요.</p>':''}<div class="import-actions"><button type="button" class="btn" data-act="importconfirm" data-prefix="${prefix}" ${result.add?'':'disabled'}>정상 ${result.add}개 추가</button><button type="button" class="btn ghost" data-act="importcancel" data-prefix="${prefix}">입력 수정</button></div>`;
+  preview.innerHTML=`<p class="import-summary">추가 예정 ${result.add}개 · 중복 ${result.skip}개 · 확인 필요 ${result.bad}묶음</p><p class="ds">${route?'파일의 언어·섹션대로 추가':'추가할 위치: '+esc(cs.name)}${format==='legacy'?'<br>기존 형식은 발음·뜻을 자동 구분하므로 내용을 확인해 주세요.':''}</p>${cards||'<p class="ds">가져올 단어가 없어요. 단어 목록을 입력해 주세요.</p>'}${result.rows.length>100?`<p class="ds">전체 ${result.rows.length}묶음 중 앞의 100묶음만 미리보기로 표시해요. 검사와 추가는 전체 목록을 기준으로 합니다.</p>`:''}<p class="${result.add?'ds':'import-error'}">${esc(importPreviewNotice(result))}</p>${result.bad?'<p class="import-error">확인 필요 항목은 추가하지 않아요. 입력 내용을 고친 뒤 다시 미리보기 할 수 있어요.</p>':''}<div class="import-actions"><button type="button" class="btn" data-act="importconfirm" data-prefix="${prefix}" ${result.add?'':'disabled'}>${result.add?'정상 '+result.add+'개 추가':'추가할 항목 없음'}</button><button type="button" class="btn ghost" data-act="importcancel" data-prefix="${prefix}">입력 수정</button></div>`;
   preview.scrollIntoView({block:'nearest',behavior:'smooth'});
 }
 function commitTextImport(prefix){
@@ -1433,7 +1443,7 @@ function buildWordList(s){
     const o=view.open===w.id,chk=sel.includes(w.id);
     const box=mv?`<input type="checkbox" class="wchk" data-act="selword" data-id="${w.id}" ${chk?'checked':''} aria-label="선택">`:'';
     const icons=mv?'':`<div class="wicons"><button class="ic star${w.star?' on':''}" data-act="star" data-id="${w.id}" aria-label="${w.star?'즐겨찾기 해제':'즐겨찾기 추가'}" aria-pressed="${!!w.star}">${w.star?'★':'☆'}</button>${aud?`<button class="ic" data-act="speak" data-id="${w.id}" aria-label="발음 듣기">🔊</button>`:''}<button class="ic ck" data-act="known" data-id="${w.id}" aria-label="${w.known?'외움 취소':'외움 표시'}" aria-pressed="${!!w.known}">${w.known?'✓':'○'}</button></div>`;
-    return `<li class="w${w.known?' k':''}${o?' open':''}"><div class="wr" data-act="rowtap" data-id="${w.id}">${box}<div class="wtop"><div class="wt"><b>${esc(w.w)}</b>${w.h&&w.h!==w.w?`<span class="hg">${esc(w.h)}</span>`:''}${w.r?`<span class="rd">${pronunciationHtml(w.r)}</span>`:''}</div>${icons}</div><div class="wm">${esc(w.m)}</div>${w.e?`<div class="we">${esc(w.e)}</div>`:''}</div>${o&&!mv?`<div class="ra"><button class="btn ghost sm" data-act="edit" data-id="${w.id}">수정</button><button class="btn ghost sm" data-act="delw" data-id="${w.id}">삭제</button></div>`:''}</li>`};
+    return `<li class="w${w.known?' k':''}${o?' open':''}"><div class="wr" data-act="rowtap" data-id="${w.id}">${box}<div class="wtop"><div class="wt"><b>${esc(w.w)}</b>${w.h&&w.h!==w.w?`<span class="hg">${esc(w.h)}</span>`:''}</div>${icons}</div>${w.r?`<span class="rd">${pronunciationHtml(w.r)}</span>`:''}<div class="wm">${esc(w.m)}</div>${w.e?`<div class="we">${esc(w.e)}</div>`:''}</div>${o&&!mv?`<div class="ra"><button class="btn ghost sm" data-act="edit" data-id="${w.id}">수정</button><button class="btn ghost sm" data-act="delw" data-id="${w.id}">삭제</button></div>`:''}</li>`};
   const rows=unShown.map(row).join('')+(filt==='all'&&fKn.length?`<li class="sep">외운 단어 ${fKn.length}개</li>`+knShown.map(row).join(''):knShown.map(row).join(''));
   const emptyMsg=q?'검색 결과가 없어요.':filt==='kn'?'완료(외운) 단어가 아직 없어요.':filt==='un'?'안 외운 단어가 없어요. 모두 외웠어요! 🎉':'아직 단어가 없어요.<br>아래 ＋ 버튼으로 첫 단어를 추가해 보세요.';
   const moreBtn=filteredTotal>shownTotal?`<button class="wmore" data-act="showmore">더 보기 (${filteredTotal-shownTotal}개 더)</button>`:'';
@@ -1475,7 +1485,7 @@ function favView(){
   const unItems=items.filter(it=>!it.w.known),knItems=items.filter(it=>it.w.known);
   const row=it=>{
     const w=it.w,o=view.open===w.id;
-    return `<li class="w${w.known?' k':''}${o?' open':''}"><div class="wr" data-act="rowtap" data-id="${w.id}" data-sec="${it.secId}"><div class="wtop"><div class="wt"><b>${esc(w.w)}</b>${w.h&&w.h!==w.w?`<span class="hg">${esc(w.h)}</span>`:''}${w.r?`<span class="rd">${pronunciationHtml(w.r)}</span>`:''}<span class="secTag">${esc(it.secName)}</span></div><div class="wicons"><button class="ic star on" data-act="star" data-id="${w.id}" data-sec="${it.secId}" aria-label="즐겨찾기 해제" aria-pressed="true">★</button>${aud?`<button class="ic" data-act="speak" data-id="${w.id}" data-sec="${it.secId}" aria-label="발음 듣기">🔊</button>`:''}<button class="ic ck" data-act="known" data-id="${w.id}" data-sec="${it.secId}" aria-label="${w.known?'외움 취소':'외움 표시'}" aria-pressed="${!!w.known}">${w.known?'✓':'○'}</button></div></div><div class="wm">${esc(w.m)}</div>${w.e?`<div class="we">${esc(w.e)}</div>`:''}</div>${''}</li>`;
+    return `<li class="w${w.known?' k':''}${o?' open':''}"><div class="wr" data-act="rowtap" data-id="${w.id}" data-sec="${it.secId}"><div class="wtop"><div class="wt"><b>${esc(w.w)}</b>${w.h&&w.h!==w.w?`<span class="hg">${esc(w.h)}</span>`:''}<span class="secTag">${esc(it.secName)}</span></div><div class="wicons"><button class="ic star on" data-act="star" data-id="${w.id}" data-sec="${it.secId}" aria-label="즐겨찾기 해제" aria-pressed="true">★</button>${aud?`<button class="ic" data-act="speak" data-id="${w.id}" data-sec="${it.secId}" aria-label="발음 듣기">🔊</button>`:''}<button class="ic ck" data-act="known" data-id="${w.id}" data-sec="${it.secId}" aria-label="${w.known?'외움 취소':'외움 표시'}" aria-pressed="${!!w.known}">${w.known?'✓':'○'}</button></div></div>${w.r?`<span class="rd">${pronunciationHtml(w.r)}</span>`:''}<div class="wm">${esc(w.m)}</div>${w.e?`<div class="we">${esc(w.e)}</div>`:''}</div>${''}</li>`;
   };
   const rows=unItems.map(row).join('')+(knItems.length?`<li class="sep">외운 단어 ${knItems.length}개</li>`+knItems.map(row).join(''):'');
   const body=aud?`
@@ -1542,7 +1552,7 @@ function searchResultsHTML(){
   const shown=results.slice(0,showN);
   const row=({w,sec0})=>{
     const aud=tabAudio(sec0.lang);
-    return `<li class="w"><div class="wr" data-act="srchopen" data-id="${w.id}" data-sec="${sec0.id}"><div class="wtop"><div class="wt"><b>${esc(w.w)}</b>${w.r?`<span class="rd">${pronunciationHtml(w.r)}</span>`:''}</div><div class="wicons"><button class="ic star${w.star?' on':''}" data-act="star" data-id="${w.id}" data-sec="${sec0.id}" aria-label="${w.star?'즐겨찾기 해제':'즐겨찾기 추가'}" aria-pressed="${!!w.star}">${w.star?'★':'☆'}</button>${aud?`<button class="ic" data-act="speak" data-id="${w.id}" data-sec="${sec0.id}" aria-label="발음 듣기">🔊</button>`:''}</div></div><div class="wm">${esc(w.m)}</div><div class="srchpath">${esc(tabName(sec0.lang))} · ${esc(sec0.name)}</div></div></li>`;
+    return `<li class="w"><div class="wr" data-act="srchopen" data-id="${w.id}" data-sec="${sec0.id}"><div class="wtop"><div class="wt"><b>${esc(w.w)}</b></div><div class="wicons"><button class="ic star${w.star?' on':''}" data-act="star" data-id="${w.id}" data-sec="${sec0.id}" aria-label="${w.star?'즐겨찾기 해제':'즐겨찾기 추가'}" aria-pressed="${!!w.star}">${w.star?'★':'☆'}</button>${aud?`<button class="ic" data-act="speak" data-id="${w.id}" data-sec="${sec0.id}" aria-label="발음 듣기">🔊</button>`:''}</div></div>${w.r?`<span class="rd">${pronunciationHtml(w.r)}</span>`:''}<div class="wm">${esc(w.m)}</div><div class="srchpath">${esc(tabName(sec0.lang))} · ${esc(sec0.name)}</div></div></li>`;
   };
   const rows=shown.map(row).join('');
   const moreBtn=results.length>shown.length?`<button class="wmore" data-act="showmore">더 보기 (${results.length-shown.length}개 더)</button>`:'';
