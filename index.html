@@ -195,7 +195,7 @@ h1{font-size:32px}
 .ptr.spin .ptrloader{display:block;animation:ptrspin .8s linear infinite}
 .ptrlabel{font:700 13px/1.4 "Noto Sans KR",sans-serif;white-space:nowrap}
 @keyframes ptrspin{to{transform:rotate(360deg)}}
-.pron-line{display:block}
+.pron-line{display:inline}
 @media(prefers-reduced-motion:reduce){.ptr,.ptr .ptrarrow{transition:none}.ptr.spin .ptrloader{animation:none}}
 .fab{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:20;padding:14px 26px;border:0;border-radius:999px;background:var(--green);color:var(--onG);font:700 16px "Noto Sans KR",sans-serif;box-shadow:0 6px 18px rgba(0,0,0,.25);cursor:pointer}
 .menu{padding:6px 18px}
@@ -317,7 +317,7 @@ h1{font-size:32px}
 </style>
 </head>
 <body>
-<div class="statbar"><div id="stat" class="stat"></div><div class="header-tools"><button class="ic" data-act="cfg" aria-label="설정" style="width:44px;height:44px;font-size:20px">⚙</button><div class="status-tools"><div class="status-icons" aria-label="앱 상태"><button class="status-icon" id="connection-icon" data-act="appinfo" aria-label="연결 상태 · 안내 열기"></button><button class="status-icon" id="offline-icon" data-act="appinfo" aria-label="오프라인 준비 상태 · 안내 열기"></button><button class="status-icon info-icon" id="app-info-button" data-act="appinfo" aria-label="앱 안내" aria-expanded="false" aria-controls="app-info-panel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6"/><circle cx="12" cy="7.5" r=".8" fill="currentColor" stroke="none"/></svg><span class="update-dot" id="update-dot" hidden></span></button></div><section class="app-info-panel" id="app-info-panel" role="dialog" aria-labelledby="app-info-heading" hidden><div class="app-info-heading"><h2 id="app-info-heading" tabindex="-1">앱 사용 안내</h2><button class="ic sm" data-act="closeappinfo" aria-label="안내 닫기">×</button></div><dl class="runtime-details"><div><dt>연결 상태</dt><dd id="runtime-network"></dd></div><div><dt>오프라인</dt><dd id="offline-status"></dd></div><div><dt>현재 버전</dt><dd id="runtime-version">v1.0.16</dd></div></dl><p class="runtime-help">오프라인에서도 저장된 단어 보기·등록·학습과 엑셀 가져오기를 사용할 수 있어요. 발음 재생은 기기에 저장된 음성과 브라우저 지원에 따라 달라요.</p><div class="runtime-update"><p id="update-message" role="status" aria-live="polite"></p><div class="import-actions"><button class="btn ghost sm" id="update-button" data-act="checkupdate">새 버전 확인</button><button class="btn sm" id="update-apply-button" data-act="applyupdate" hidden>새 버전 적용</button></div></div></section></div></div></div>
+<div class="statbar"><div id="stat" class="stat"></div><div class="header-tools"><button class="ic" data-act="cfg" aria-label="설정" style="width:44px;height:44px;font-size:20px">⚙</button><div class="status-tools"><div class="status-icons" aria-label="앱 상태"><button class="status-icon" id="connection-icon" data-act="appinfo" aria-label="연결 상태 · 안내 열기"></button><button class="status-icon" id="offline-icon" data-act="appinfo" aria-label="오프라인 준비 상태 · 안내 열기"></button><button class="status-icon info-icon" id="app-info-button" data-act="appinfo" aria-label="앱 안내" aria-expanded="false" aria-controls="app-info-panel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6"/><circle cx="12" cy="7.5" r=".8" fill="currentColor" stroke="none"/></svg><span class="update-dot" id="update-dot" hidden></span></button></div><section class="app-info-panel" id="app-info-panel" role="dialog" aria-labelledby="app-info-heading" hidden><div class="app-info-heading"><h2 id="app-info-heading" tabindex="-1">앱 사용 안내</h2><button class="ic sm" data-act="closeappinfo" aria-label="안내 닫기">×</button></div><dl class="runtime-details"><div><dt>연결 상태</dt><dd id="runtime-network"></dd></div><div><dt>오프라인</dt><dd id="offline-status"></dd></div><div><dt>현재 버전</dt><dd id="runtime-version">v1.0.17</dd></div></dl><p class="runtime-help">오프라인에서도 저장된 단어 보기·등록·학습과 엑셀 가져오기를 사용할 수 있어요. 발음 재생은 기기에 저장된 음성과 브라우저 지원에 따라 달라요.</p><div class="runtime-update"><p id="update-message" role="status" aria-live="polite"></p><div class="import-actions"><button class="btn ghost sm" id="update-button" data-act="checkupdate">새 버전 확인</button><button class="btn sm" id="update-apply-button" data-act="applyupdate" hidden>새 버전 적용</button></div></div></section></div></div></div>
 <div id="editor-notice" class="storage-warning" hidden><span id="editor-message"></span><button class="btn ghost sm" data-act="bk">백업 열기</button><button class="btn ghost sm" data-act="reloadlatest">최신 내용 열기</button></div>
 <div id="storage-warning" class="storage-warning" role="alert" hidden><span>이 기기에 저장하지 못했어요. 새로고침하거나 창을 닫기 전에 백업 파일을 저장해 주세요.</span><button class="btn ghost sm" data-act="bk">백업 열기</button></div>
 <div id="app"></div>
@@ -360,10 +360,13 @@ function kanaKeyboardInput(reading){
 }
 function keyboardPronunciation(value,word=''){
   const raw=String(value||'');
+  if(/[A-Za-z]['’][A-Za-z]/.test(raw))return raw;
   const match=raw.trim().normalize('NFC').match(/^([ぁ-ゖゔー0-9\s、。！？・「」（）(),.!?]+)\s+([A-Za-z\u00c0-\u024f][A-Za-z\u00c0-\u024f\s'’.,!?():;–—-]*)$/u);
   if(!match){
     if(!/^[A-Za-z\u00c0-\u024f][A-Za-z\u00c0-\u024fːˑ\s'’.,!?():;–—-]*$/u.test(raw.trim()))return raw;
-    const kana=String(word||'').normalize('NFKC').replace(/[ァ-ヶ]/g,c=>String.fromCharCode(c.charCodeAt(0)-0x60));
+    const normalized=String(word||'').normalize('NFKC').trim().toLowerCase();
+    const special={'tシャツ':'てぃーしゃつ','jポップ':'じぇいぽっぷ','kポップ':'けいぽっぷ','sサイズ':'えすさいず','mサイズ':'えむさいず','lサイズ':'えるさいず','xlサイズ':'えっくすえるさいず'};
+    const kana=(special[normalized]||String(word||'').normalize('NFKC')).replace(/[ァ-ヶ]/g,c=>String.fromCharCode(c.charCodeAt(0)-0x60));
     if(!/[ぁ-ゖァ-ヶ]/u.test(kana)||!/^[ぁ-ゖァ-ヶー0-9\s、。！？・「」（）(),.!?]+$/u.test(kana))return raw;
     const hiragana=kana.replace(/[ァ-ヶ]/g,c=>String.fromCharCode(c.charCodeAt(0)-0x60));
     return kanaKeyboardInput(hiragana)||raw;
@@ -373,10 +376,14 @@ function keyboardPronunciation(value,word=''){
   return match[1].trim()+raw.trim().match(/\s+(?=[A-Za-z\u00c0-\u024f])/u)[0]+roman;
 }
 
-function pronunciationHtml(value,word=''){
-  const raw=keyboardPronunciation(value,word);
-  const match=raw.trim().match(/^([\u3040-\u309fー0-9\s、。！？・「」『』（）(),.!?〜～…]+)\s+([A-Za-z\u00c0-\u024f][A-Za-z\u00c0-\u024f\s'’.,!?():;–—-]*)$/u);
-  return match?'<span class="pron-line">'+esc(match[1].trim())+'</span><span class="pron-line">'+esc(match[2].trim())+'</span>':esc(raw).replace(/\n/g,'<br>');
+function pronunciationHtml(value,word='',reading=''){
+  let raw=keyboardPronunciation(value,word);
+  const kana=String(reading||'').trim();
+  if(kana&&kana!==word&&!/[ぁ-ゖァ-ヶ]/.test(raw)){
+    const hira=kana.normalize('NFKC').replace(/[ァ-ヶ]/g,c=>String.fromCharCode(c.charCodeAt(0)-0x60));
+    raw=hira+(raw?' '+raw:'');
+  }
+  return esc(raw.trim().replace(/\s+/g,' '));
 }
 
 const uid=()=>Math.random().toString(36).slice(2,9);
@@ -563,7 +570,7 @@ function targetId(last){
   if(start.mode==='home')return '';
   return S.sections.some(x=>x.id===last)?last:'';
 }
-const APP_VERSION='v1.0.16';
+const APP_VERSION='v1.0.17';
 const stat=m=>{const e=$('#stat');if(e)e.textContent=m};
 const save=()=>{
   if(!canWriteLocal())return false;
@@ -1532,7 +1539,7 @@ function buildWordList(s){
     const o=view.open===w.id,chk=sel.includes(w.id);
     const box=mv?`<input type="checkbox" class="wchk" data-act="selword" data-id="${w.id}" ${chk?'checked':''} aria-label="선택">`:'';
     const icons=mv?'':`<div class="wicons"><button class="ic star${w.star?' on':''}" data-act="star" data-id="${w.id}" aria-label="${w.star?'즐겨찾기 해제':'즐겨찾기 추가'}" aria-pressed="${!!w.star}">${w.star?'★':'☆'}</button>${aud?`<button class="ic" data-act="speak" data-id="${w.id}" aria-label="발음 듣기">🔊</button>`:''}<button class="ic ck" data-act="known" data-id="${w.id}" aria-label="${w.known?'외움 취소':'외움 표시'}" aria-pressed="${!!w.known}">${w.known?'✓':'○'}</button></div>`;
-    return `<li class="w${w.known?' k':''}${o?' open':''}"><div class="wr" data-act="rowtap" data-id="${w.id}">${box}<div class="wtop"><div class="wt"><b>${esc(w.w)}</b>${w.h&&w.h!==w.w?`<span class="hg">${esc(w.h)}</span>`:''}</div>${icons}</div>${w.r?`<span class="rd">${pronunciationHtml(w.r,w.w)}</span>`:''}<div class="wm">${esc(w.m)}</div>${w.e?`<div class="we">${exampleHtml(w.e)}</div>`:''}</div>${o&&!mv?`<div class="ra"><button class="btn ghost sm" data-act="edit" data-id="${w.id}">수정</button><button class="btn ghost sm" data-act="delw" data-id="${w.id}">삭제</button></div>`:''}</li>`};
+    return `<li class="w${w.known?' k':''}${o?' open':''}"><div class="wr" data-act="rowtap" data-id="${w.id}">${box}<div class="wtop"><div class="wt"><b>${esc(w.w)}</b></div>${icons}</div>${w.r||(w.h&&w.h!==w.w)?`<span class="rd">${pronunciationHtml(w.r,w.w,w.h)}</span>`:''}<div class="wm">${esc(w.m)}</div>${w.e?`<div class="we">${exampleHtml(w.e)}</div>`:''}</div>${o&&!mv?`<div class="ra"><button class="btn ghost sm" data-act="edit" data-id="${w.id}">수정</button><button class="btn ghost sm" data-act="delw" data-id="${w.id}">삭제</button></div>`:''}</li>`};
   const rows=unShown.map(row).join('')+(filt==='all'&&fKn.length?`<li class="sep">외운 단어 ${fKn.length}개</li>`+knShown.map(row).join(''):knShown.map(row).join(''));
   const emptyMsg=q?'검색 결과가 없어요.':filt==='kn'?'완료(외운) 단어가 아직 없어요.':filt==='un'?'안 외운 단어가 없어요. 모두 외웠어요! 🎉':'아직 단어가 없어요.<br>아래 ＋ 버튼으로 첫 단어를 추가해 보세요.';
   const moreBtn=filteredTotal>shownTotal?`<button class="wmore" data-act="showmore">더 보기 (${filteredTotal-shownTotal}개 더)</button>`:'';
@@ -1574,7 +1581,7 @@ function favView(){
   const unItems=items.filter(it=>!it.w.known),knItems=items.filter(it=>it.w.known);
   const row=(it,index)=>{
     const w=it.w,o=view.open===w.id;
-    return `<li class="w${w.known?' k':''}${o?' open':''}"><div class="wr" data-act="rowtap" data-id="${w.id}" data-sec="${it.secId}"><div class="fav-meta"><span class="fav-number">${index+1}</span><span class="secTag" title="${esc(it.secName)}">${esc(it.secName)}</span></div><div class="wtop"><div class="wt"><b>${esc(w.w)}</b>${w.h&&w.h!==w.w?`<span class="hg">${esc(w.h)}</span>`:''}</div><div class="wicons"><button class="ic star on" data-act="star" data-id="${w.id}" data-sec="${it.secId}" aria-label="즐겨찾기 해제" aria-pressed="true">★</button>${aud?`<button class="ic" data-act="speak" data-id="${w.id}" data-sec="${it.secId}" aria-label="발음 듣기">🔊</button>`:''}<button class="ic ck" data-act="known" data-id="${w.id}" data-sec="${it.secId}" aria-label="${w.known?'외움 취소':'외움 표시'}" aria-pressed="${!!w.known}">${w.known?'✓':'○'}</button></div></div>${w.r?`<span class="rd">${pronunciationHtml(w.r,w.w)}</span>`:''}<div class="wm">${esc(w.m)}</div>${w.e?`<div class="we">${exampleHtml(w.e)}</div>`:''}</div>${''}</li>`;
+    return `<li class="w${w.known?' k':''}${o?' open':''}"><div class="wr" data-act="rowtap" data-id="${w.id}" data-sec="${it.secId}"><div class="fav-meta"><span class="fav-number">${index+1}</span><span class="secTag" title="${esc(it.secName)}">${esc(it.secName)}</span></div><div class="wtop"><div class="wt"><b>${esc(w.w)}</b></div><div class="wicons"><button class="ic star on" data-act="star" data-id="${w.id}" data-sec="${it.secId}" aria-label="즐겨찾기 해제" aria-pressed="true">★</button>${aud?`<button class="ic" data-act="speak" data-id="${w.id}" data-sec="${it.secId}" aria-label="발음 듣기">🔊</button>`:''}<button class="ic ck" data-act="known" data-id="${w.id}" data-sec="${it.secId}" aria-label="${w.known?'외움 취소':'외움 표시'}" aria-pressed="${!!w.known}">${w.known?'✓':'○'}</button></div></div>${w.r||(w.h&&w.h!==w.w)?`<span class="rd">${pronunciationHtml(w.r,w.w,w.h)}</span>`:''}<div class="wm">${esc(w.m)}</div>${w.e?`<div class="we">${exampleHtml(w.e)}</div>`:''}</div>${''}</li>`;
   };
   const rows=unItems.map(row).join('')+(knItems.length?`<li class="sep">외운 단어 ${knItems.length}개</li>`+knItems.map((it,i)=>row(it,unItems.length+i)).join(''):'');
   const body=aud?`
@@ -1597,7 +1604,7 @@ function studyView(){
   }
   const w=d.deck[d.i];
   const card=d.flip
-    ?`<button class="deck back" data-act="flip"><span class="big">${esc(w.m)}</span><span class="hint"><span class="hw">${esc(w.w)}</span>${w.r?`<span class="hp">${pronunciationHtml(w.r,w.w)}</span>`:''}${w.e?`<span class="he">${exampleHtml(w.e)}</span>`:''}</span></button>`
+    ?`<button class="deck back" data-act="flip"><span class="big">${esc(w.m)}</span><span class="hint"><span class="hw">${esc(w.w)}</span>${w.r?`<span class="hp">${pronunciationHtml(w.r,w.w,w.h)}</span>`:''}${w.e?`<span class="he">${exampleHtml(w.e)}</span>`:''}</span></button>`
     :`<button class="deck" data-act="flip"><span class="big">${esc(w.w)}</span><span class="hint">눌러서 뜻 보기</span></button>`;
   const aud=tabAudio(s.lang);
   return `<div class="top"><button class="link" data-act="back">← 그만하기</button><span>${aud?'<button class="link" data-act="speak">🔊 듣기</button> ':''}${d.i+1} / ${d.deck.length}</span></div>${card}
@@ -1654,7 +1661,7 @@ function searchResultsHTML(){
   const shown=results.slice(0,showN);
   const row=({w,sec0})=>{
     const aud=tabAudio(sec0.lang);
-    return `<li class="w"><div class="wr" data-act="srchopen" data-id="${w.id}" data-sec="${sec0.id}"><div class="wtop"><div class="wt"><b>${esc(w.w)}</b></div><div class="wicons"><button class="ic star${w.star?' on':''}" data-act="star" data-id="${w.id}" data-sec="${sec0.id}" aria-label="${w.star?'즐겨찾기 해제':'즐겨찾기 추가'}" aria-pressed="${!!w.star}">${w.star?'★':'☆'}</button>${aud?`<button class="ic" data-act="speak" data-id="${w.id}" data-sec="${sec0.id}" aria-label="발음 듣기">🔊</button>`:''}</div></div>${w.r?`<span class="rd">${pronunciationHtml(w.r,w.w)}</span>`:''}<div class="wm">${esc(w.m)}</div><div class="srchpath">${esc(tabName(sec0.lang))} · ${esc(sec0.name)}</div></div></li>`;
+    return `<li class="w"><div class="wr" data-act="srchopen" data-id="${w.id}" data-sec="${sec0.id}"><div class="wtop"><div class="wt"><b>${esc(w.w)}</b></div><div class="wicons"><button class="ic star${w.star?' on':''}" data-act="star" data-id="${w.id}" data-sec="${sec0.id}" aria-label="${w.star?'즐겨찾기 해제':'즐겨찾기 추가'}" aria-pressed="${!!w.star}">${w.star?'★':'☆'}</button>${aud?`<button class="ic" data-act="speak" data-id="${w.id}" data-sec="${sec0.id}" aria-label="발음 듣기">🔊</button>`:''}</div></div>${w.r||(w.h&&w.h!==w.w)?`<span class="rd">${pronunciationHtml(w.r,w.w,w.h)}</span>`:''}<div class="wm">${esc(w.m)}</div><div class="srchpath">${esc(tabName(sec0.lang))} · ${esc(sec0.name)}</div></div></li>`;
   };
   const rows=shown.map(row).join('');
   const moreBtn=results.length>shown.length?`<button class="wmore" data-act="showmore">더 보기 (${results.length-shown.length}개 더)</button>`:'';
