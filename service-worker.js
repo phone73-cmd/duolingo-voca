@@ -1,4 +1,4 @@
-const VERSION='v1.0.42';
+const VERSION='v1.0.43';
 const CACHE='duolingo-voca-'+VERSION;
 const BASE=new URL('./',self.location.href);
 const INDEX=new URL('index.html',BASE).href;
